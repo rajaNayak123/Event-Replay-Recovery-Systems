@@ -91,3 +91,22 @@ model ProcessedEvent {
   @@index([eventType])
   @@map("processed_events")
 }
+
+model ReplayLog {
+  id              String          @id @default(cuid())
+  failedEventId   String
+  eventId         String
+  requestedBy     String
+  status          ReplayLogStatus @default(REQUESTED)
+  requestPayload  Json?
+  resultPayload   Json?
+  errorMessage    String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  failedEvent     FailedEvent     @relation(fields: [failedEventId], references: [id], onDelete: Cascade)
+
+  @@index([failedEventId])
+  @@index([eventId])
+  @@map("replay_logs")
+}
