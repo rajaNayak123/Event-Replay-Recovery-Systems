@@ -15,16 +15,16 @@ datasource db {
 }
 
 enum FailedEventStatus {
-  FAILED,
-  REPLAY_PENDING,
-  REPLAYED,
+  FAILED
+  REPLAY_PENDING
+  REPLAYED
   REPLAY_FAILED
 }
 
 enum ReplayLogStatus {
-  SUCCESS,
-  FAILED,
-  REQUESTED,
+  SUCCESS
+  FAILED
+  REQUESTED
   SKIPPED_ALREADY_PROCESSED
 }
 
