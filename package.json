@@ -1,6 +1,8 @@
 {
   "name": "event-replay-recovery-system",
   "version": "1.0.0",
+  "private": true,
+  "packageManager": "npm@10.0.0",
   "description": "",
   "main": "index.js",
 "scripts": {
@@ -8,7 +10,7 @@
     "dev:consumer": "npm --workspace=services/consumer-worker run dev",
     "dev:replay": "npm --workspace=services/replay-worker run dev",
     "build": "turbo build",
-    "dev": "turbo run dev --parallel"
+    "dev": "turbo run dev"
   },
   "keywords": [],
   "author": "",
