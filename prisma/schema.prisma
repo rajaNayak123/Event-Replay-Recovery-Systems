@@ -13,3 +13,17 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+enum FailedEventStatus {
+  FAILED,
+  REPLAY_PENDING,
+  REPLAYED,
+  REPLAY_FAILED
+}
+
+enum ReplayLogStatus {
+  SUCCESS,
+  FAILED,
+  REQUESTED,
+  SKIPPED_ALREADY_PROCESSED
+}
