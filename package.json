@@ -3,13 +3,21 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+"scripts": {
+    "dev:api": "npm --workspace=services/api run dev",
+    "dev:consumer": "npm --workspace=services/consumer-worker run dev",
+    "dev:replay": "npm --workspace=services/replay-worker run dev",
+    "build": "turbo build",
+    "dev": "turbo run dev --parallel"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
+  "workspaces": [
+    "services/*",
+    "packages/*"
+  ],
   "dependencies": {
     "@prisma/client": "^6.19.3",
     "dotenv": "^17.4.1",
