@@ -27,3 +27,20 @@ enum ReplayLogStatus {
   REQUESTED,
   SKIPPED_ALREADY_PROCESSED
 }
+
+model Order {
+  id               String   @id @default(cuid())
+  orderNumber      String   @unique
+  tenantId         String
+  amount           Decimal  @db.Decimal(10, 2)
+  currency         String   @default("INR")
+  status           String   @default("CREATED")
+  inventoryStatus  String   @default("PENDING")
+  paymentStatus    String   @default("PENDING")
+  metadata         Json?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([tenantId])
+  @@map("orders")
+}
