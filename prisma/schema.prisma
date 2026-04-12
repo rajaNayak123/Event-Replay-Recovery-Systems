@@ -72,3 +72,22 @@ model FailedEvent {
   @@index([eventType])
   @@map("failed_events")
 }
+
+model ProcessedEvent {
+  id              String   @id @default(cuid())
+  eventId         String   @unique
+  eventType       String
+  tenantId        String
+  orderId         String?
+  sourceStream    String
+  replayed        Boolean  @default(false)
+  processedAt     DateTime @default(now())
+  processor       String
+  checksum        String?
+  metadata        Json?
+
+  @@index([tenantId])
+  @@index([orderId])
+  @@index([eventType])
+  @@map("processed_events")
+}
