@@ -44,3 +44,31 @@ model Order {
   @@index([tenantId])
   @@map("orders")
 }
+
+model FailedEvent {
+  id                 String            @id @default(cuid())
+  eventId            String            @unique
+  eventType          String
+  tenantId           String
+  streamName         String
+  orderId            String?
+  originalPayload    Json
+  errorMessage       String
+  retryCount         Int               @default(0)
+  status             FailedEventStatus @default(FAILED)
+  firstFailedAt      DateTime
+  lastFailedAt       DateTime
+  replayedAt         DateTime?
+  replayRequestedBy  String?
+  replayMetadata     Json?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  replayLogs         ReplayLog[]
+
+  @@index([status])
+  @@index([tenantId])
+  @@index([orderId])
+  @@index([eventType])
+  @@map("failed_events")
+}
