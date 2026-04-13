@@ -1,9 +1,9 @@
 {
   "name": "api",
   "version": "1.0.0",
-  "main": "src/index.ts",
+  "main": "src/server.ts",
   "scripts": {
-    "dev": "tsx watch src/index.ts"
+    "dev": "tsx watch src/server.ts"
   },
   "dependencies": {
     "cors": "^2.8.6",
