@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { Prisma } from "../../../../generated/prisma";
+import { Prisma } from "@prisma/client";
 import { prisma } from "../db/prisma";
 import { BaseEvent } from "../events/types";
 import { paymentService } from "./payment.service";
@@ -46,7 +46,7 @@ export const processingService = {
           }
         }
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === "P2002"
