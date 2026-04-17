@@ -1,8 +1,16 @@
 import "dotenv/config";
-import { logger } from "shared";
+import { logger, prisma, redis } from "shared";
 import { startReplayWorker } from "./worker";
 
-startReplayWorker().catch((error) => {
+async function main() {
+  await prisma.$connect();
+  await redis.ping();
+  logger.info("Replay worker dependencies connected");
+
+  await startReplayWorker();
+}
+
+main().catch((error) => {
   logger.error(error, "Replay worker crashed");
   process.exit(1);
 });
