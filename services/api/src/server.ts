@@ -1,8 +1,11 @@
 import "dotenv/config";
 import { env, logger } from "shared";
 import { createApp } from "./app";
+import { bootstrapApi } from "./lib/bootstrap";
 
 async function main() {
+  await bootstrapApi();
+
   const app = createApp();
 
   app.listen(env.PORT, () => {
