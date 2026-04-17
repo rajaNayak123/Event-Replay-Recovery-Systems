@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "ioredis": "^5.10.1",
+    "kafkajs": "^2.2.4",
     "pino": "^10.3.1",
     "uuid": "^13.0.0",
     "zod": "^4.3.6"
