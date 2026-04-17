@@ -9,6 +9,8 @@ export * from "./redis/client";
 export * from "./redis/consumer";
 export * from "./redis/group";
 export * from "./redis/publisher";
+export * from "./redis/parser";
+export * from "./redis/stream-message";
 export * from "./repositories/failed-event.repository";
 export * from "./repositories/order.repository";
 export * from "./repositories/processed-event.repository";
