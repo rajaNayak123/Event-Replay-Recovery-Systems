@@ -1,9 +1,8 @@
-import { FailedEventStatus } from "../../../../generated/prisma";
+import { FailedEventStatus } from "@prisma/client";
 import { failedEventRepository } from "../repositories/failed-event.repository";
 import { replayLogRepository } from "../repositories/replay-log.repository";
 import { publishToStream } from "../redis/publisher";
 import { STREAMS } from "../constants/streams";
-import { safeJsonParse } from "../utils/json";
 
 export const replayRequestService = {
   async requestReplay(failedEventId: string, requestedBy: string) {
@@ -11,6 +10,15 @@ export const replayRequestService = {
 
     if (!failedEvent) {
       throw new Error("Failed event not found");
+    }
+
+    if (
+      failedEvent.status !== "FAILED" &&
+      failedEvent.status !== "REPLAY_FAILED"
+    ) {
+      throw new Error(
+        `Replay is only allowed for FAILED or REPLAY_FAILED events. Current status: ${failedEvent.status}`
+      );
     }
 
     const replayLog = await replayLogRepository.create({
@@ -40,6 +48,10 @@ export const replayRequestService = {
       event: failedEvent.originalPayload
     });
 
-    return { failedEvent, replayLog };
+    return {
+      replayAccepted: true,
+      replayLogId: replayLog.id,
+      failedEventId: failedEvent.id
+    };
   }
 };
