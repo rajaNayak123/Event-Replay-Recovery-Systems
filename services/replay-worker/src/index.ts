@@ -1,10 +1,9 @@
 import "dotenv/config";
-import { logger, prisma, redis } from "shared";
+import { logger, prisma } from "shared";
 import { startReplayWorker } from "./worker";
 
 async function main() {
   await prisma.$connect();
-  await redis.ping();
   logger.info("Replay worker dependencies connected");
 
   await startReplayWorker();

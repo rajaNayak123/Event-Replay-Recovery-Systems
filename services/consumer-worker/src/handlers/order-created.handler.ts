@@ -1,6 +1,5 @@
 import {
   BaseEvent,
-  STREAMS,
   env,
   processingService,
   retryService,
@@ -8,13 +7,13 @@ import {
   logger
 } from "shared";
 
-export async function handleOrderCreated(event: BaseEvent, sourceStream: string) {
+export async function handleOrderCreated(event: BaseEvent, sourceTopic: string) {
   const retryCount = event.meta?.retryCount ?? 0;
 
   try {
     const result = await processingService.processOrderCreated(
       event as any,
-      sourceStream,
+      sourceTopic,
       "consumer-worker"
     );
 
@@ -24,7 +23,10 @@ export async function handleOrderCreated(event: BaseEvent, sourceStream: string)
         "Event skipped due to idempotency"
       );
     } else {
-      logger.info({ eventId: event.eventId, orderId: event.orderId }, "Event processed successfully");
+      logger.info(
+        { eventId: event.eventId, orderId: event.orderId },
+        "Event processed successfully"
+      );
     }
   } catch (error: any) {
     const nextRetryCount = retryCount + 1;
@@ -46,25 +48,26 @@ export async function handleOrderCreated(event: BaseEvent, sourceStream: string)
           meta: {
             ...event.meta,
             retryCount: nextRetryCount,
-            originalStream: sourceStream
+            originalStream: sourceTopic
           }
         },
         nextRetryCount
       );
-      logger.info({ eventId: event.eventId, nextRetryCount }, "Retry scheduled");
+
+      logger.info({ eventId: event.eventId, nextRetryCount }, "Retry published to retry topic");
       return;
     }
 
     await failedEventService.persistFailure(
       event,
-      sourceStream,
+      sourceTopic,
       error.message,
       nextRetryCount
     );
 
     logger.error(
       { eventId: event.eventId, retryCount: nextRetryCount },
-      "Event moved to failed_events and DLQ"
+      "Event persisted as failed and sent to DLQ topic"
     );
   }
 }

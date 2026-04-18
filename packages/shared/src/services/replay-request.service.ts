@@ -1,8 +1,9 @@
 import { FailedEventStatus } from "@prisma/client";
+import { failedEventsCacheService } from "../cache/failed-events-cache.service";
+import { publishKafkaMessage } from "../kafka/producer";
+import { TOPICS } from "../kafka/topics";
 import { failedEventRepository } from "../repositories/failed-event.repository";
 import { replayLogRepository } from "../repositories/replay-log.repository";
-import { publishToStream } from "../redis/publisher";
-import { STREAMS } from "../constants/streams";
 
 export const replayRequestService = {
   async requestReplay(failedEventId: string, requestedBy: string) {
@@ -40,13 +41,24 @@ export const replayRequestService = {
       }
     });
 
-    await publishToStream(STREAMS.REPLAY, {
-      replayRequestId: replayLog.id,
-      failedEventId: failedEvent.id,
-      requestedBy,
-      requestedAt: new Date().toISOString(),
-      event: failedEvent.originalPayload
-    });
+    await publishKafkaMessage(
+      TOPICS.ORDER_REPLAY,
+      failedEvent.eventId,
+      {
+        replayRequestId: replayLog.id,
+        failedEventId: failedEvent.id,
+        requestedBy,
+        requestedAt: new Date().toISOString(),
+        event: failedEvent.originalPayload
+      },
+      {
+        replayRequestId: replayLog.id,
+        eventId: failedEvent.eventId,
+        replay: "true"
+      }
+    );
+
+    await failedEventsCacheService.invalidateForFailedEvent(failedEventId);
 
     return {
       replayAccepted: true,

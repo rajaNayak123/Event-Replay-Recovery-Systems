@@ -1,7 +1,8 @@
-import { logger, prisma, redis } from "shared";
+import { ensureKafkaTopics, logger, prisma, redis } from "shared";
 
 export async function bootstrapApi() {
   await prisma.$connect();
   await redis.ping();
+  await ensureKafkaTopics();
   logger.info("API dependencies connected");
 }

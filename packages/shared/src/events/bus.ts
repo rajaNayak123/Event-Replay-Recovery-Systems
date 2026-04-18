@@ -1,7 +1,12 @@
-import { publishToStream } from "../redis/publisher";
+import { publishKafkaMessage } from "../kafka/producer";
 
-export class RedisEventBus {
-  async publish(stream: string, event: unknown) {
-    return publishToStream(stream, event);
+export class KafkaEventBus {
+  async publish(
+    topic: string,
+    key: string,
+    event: unknown,
+    headers?: Record<string, string>
+  ) {
+    return publishKafkaMessage(topic, key, event, headers);
   }
 }

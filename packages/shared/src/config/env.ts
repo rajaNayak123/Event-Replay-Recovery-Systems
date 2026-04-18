@@ -10,15 +10,16 @@ const envSchema = z.object({
   DATABASE_URL: z.string().min(1),
   REDIS_URL: z.string().min(1),
 
-  STREAM_ORDERS: z.string().default("events:orders"),
-  STREAM_RETRY: z.string().default("events:orders:retry"),
-  STREAM_REPLAY: z.string().default("events:replay"),
-  STREAM_DLQ: z.string().default("events:orders:dlq"),
+  KAFKA_BROKERS: z.string().default("kafka:9092"),
+  KAFKA_CLIENT_ID: z.string().default("event-replay-platform"),
+
+  TOPIC_ORDER_CREATED: z.string().default("order.created"),
+  TOPIC_ORDER_RETRY: z.string().default("order.created.retry"),
+  TOPIC_ORDER_REPLAY: z.string().default("order.replay"),
+  TOPIC_ORDER_DLQ: z.string().default("order.created.dlq"),
 
   ORDER_CONSUMER_GROUP: z.string().default("order-processors"),
-  ORDER_CONSUMER_NAME: z.string().default("consumer-1"),
   REPLAY_CONSUMER_GROUP: z.string().default("replay-processors"),
-  REPLAY_CONSUMER_NAME: z.string().default("replay-1"),
 
   MAX_RETRIES: z.coerce.number().default(3),
   RETRY_BACKOFF_MS: z.coerce.number().default(2000),

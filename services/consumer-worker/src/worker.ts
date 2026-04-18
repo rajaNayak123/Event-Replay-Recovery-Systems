@@ -1,89 +1,63 @@
-import {
-  ack,
-  autoClaimPending,
-  ensureConsumerGroup,
-  GROUPS,
-  logger,
-  parseRedisFields,
-  readGroup,
-  safeJsonParse,
-  STREAMS
-} from "shared";
+import { env, kafka, logger, TOPICS } from "shared";
 import { handleOrderCreated } from "./handlers/order-created.handler";
 
-const streamsToConsume = [STREAMS.ORDERS, STREAMS.RETRY];
-const MIN_IDLE_TIME_MS = 30000;
-
-async function processEntries(stream: string, entries: any[], group: string) {
-  for (const [messageId, fields] of entries) {
-    const fieldMap = parseRedisFields(fields);
-    const event = safeJsonParse<any>(fieldMap.data);
-
-    try {
-      await handleOrderCreated(event, stream);
-    } finally {
-      await ack(stream, group, messageId);
-    }
-  }
-}
-
-async function recoverPending(stream: string, group: string, consumer: string) {
-  let cursor = "0-0";
-
-  while (true) {
-    const result = await autoClaimPending(
-      stream,
-      group,
-      consumer,
-      MIN_IDLE_TIME_MS,
-      cursor,
-      10
-    );
-
-    const [nextCursor, claimedEntries] = result as any;
-    cursor = nextCursor;
-
-    if (claimedEntries?.length) {
-      logger.warn(
-        { stream, count: claimedEntries.length },
-        "Recovered stale pending messages"
-      );
-
-      await processEntries(stream, claimedEntries, group);
-    }
-
-    if (cursor === "0-0") {
-      break;
-    }
-  }
-}
-
 export async function startWorker() {
-  const consumerName = process.env.ORDER_CONSUMER_NAME || "consumer-1";
+  const consumer = kafka.consumer({
+    groupId: env.ORDER_CONSUMER_GROUP
+  });
 
-  for (const stream of streamsToConsume) {
-    await ensureConsumerGroup(stream, GROUPS.ORDERS);
-  }
+  await consumer.connect();
+  await consumer.subscribe({
+    topics: [TOPICS.ORDER_CREATED, TOPICS.ORDER_RETRY]
+  });
 
-  logger.info({ streams: streamsToConsume }, "Consumer worker started");
+  logger.info(
+    { topics: [TOPICS.ORDER_CREATED, TOPICS.ORDER_RETRY] },
+    "Kafka consumer worker started"
+  );
 
-  while (true) {
-    for (const stream of streamsToConsume) {
-      await recoverPending(stream, GROUPS.ORDERS, consumerName);
+  await consumer.run({
+    autoCommit: false,
+    eachBatchAutoResolve: false,
+    eachBatch: async ({
+      batch,
+      resolveOffset,
+      heartbeat,
+      commitOffsetsIfNecessary,
+      isRunning,
+      isStale
+    }) => {
+      for (const message of batch.messages) {
+        if (!isRunning() || isStale()) break;
 
-      const messages = await readGroup(
-        stream,
-        GROUPS.ORDERS,
-        consumerName,
-        10,
-        1000
-      );
+        const rawValue = message.value?.toString();
+        if (!rawValue) {
+          resolveOffset(message.offset);
+          await commitOffsetsIfNecessary();
+          continue;
+        }
 
-      if (!messages) continue;
+        const event = JSON.parse(rawValue);
 
-      for (const [, entries] of messages as any) {
-        await processEntries(stream, entries, GROUPS.ORDERS);
+        try {
+          await handleOrderCreated(event, batch.topic);
+          resolveOffset(message.offset);
+          await commitOffsetsIfNecessary();
+          await heartbeat();
+        } catch (error) {
+          logger.error(
+            {
+              topic: batch.topic,
+              partition: batch.partition,
+              offset: message.offset,
+              error: error instanceof Error ? error.message : String(error)
+            },
+            "Kafka consumer failed to process message"
+          );
+
+          throw error;
+        }
       }
     }
-  }
+  });
 }

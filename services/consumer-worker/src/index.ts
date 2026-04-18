@@ -1,12 +1,10 @@
 import "dotenv/config";
-import { logger, prisma, redis } from "shared";
+import { logger, prisma } from "shared";
 import { startWorker } from "./worker";
 
 async function main() {
   await prisma.$connect();
-  await redis.ping();
   logger.info("Consumer worker dependencies connected");
-
   await startWorker();
 }
 

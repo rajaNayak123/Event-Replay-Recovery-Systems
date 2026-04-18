@@ -1,4 +1,10 @@
-import { RedisEventBus, STREAMS, createOrderCreatedEvent, generateOrderNumber, orderRepository } from "shared";
+import {
+  KafkaEventBus,
+  TOPICS,
+  createOrderCreatedEvent,
+  generateOrderNumber,
+  orderRepository
+} from "shared";
 
 export const orderService = {
   async createOrder(input: {
@@ -25,8 +31,13 @@ export const orderService = {
       shouldFailInventory: input.shouldFailInventory
     });
 
-    const bus = new RedisEventBus();
-    await bus.publish(STREAMS.ORDERS, event);
+    const bus = new KafkaEventBus();
+
+    await bus.publish(TOPICS.ORDER_CREATED, event.eventId, event, {
+      eventId: event.eventId,
+      eventType: event.eventType,
+      tenantId: event.tenantId
+    });
 
     return { order, event };
   }
