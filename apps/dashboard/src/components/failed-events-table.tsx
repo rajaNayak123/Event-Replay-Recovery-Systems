@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { FailedEvent } from "@/lib/types";
-import { formatDate, truncate } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 import { StatusBadge } from "./status-badge";
 import { ReplayButton } from "./replay-button";
 
@@ -29,17 +29,9 @@ export function FailedEventsTable({ events }: { events: FailedEvent[] }) {
 
               return (
                 <tr key={event.id} className="border-b border-white/5 text-slate-200">
-                <td className="px-4 py-4">
-                  <div className="flex min-w-45 flex-col gap-2">
-                    <Link
-                      href={`/failed-events/${event.id}`}
-                      className="rounded-lg border border-white/10 px-3 py-2 text-center text-xs text-slate-300 hover:bg-white/5"
-                    >
-                      View
-                    </Link>
-                    <ReplayButton id={event.id} disabled={replayDisabled} />
-                  </div>
-                </td>
+                  <td className="px-4 py-4 font-mono text-xs text-slate-400">
+                    {event.eventId.slice(0, 8)}…
+                  </td>
                   <td className="px-4 py-4">{event.eventType}</td>
                   <td className="px-4 py-4">{event.orderId || "-"}</td>
                   <td className="px-4 py-4">{event.tenantId}</td>
