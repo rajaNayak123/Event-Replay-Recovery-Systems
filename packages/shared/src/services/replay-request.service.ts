@@ -41,11 +41,13 @@ export const replayRequestService = {
       }
     });
 
+    // Publish with the freshly created replayLog.id so the replay worker
+    // can correctly update THIS log entry, not a stale one from a prior attempt
     await publishKafkaMessage(
       TOPICS.ORDER_REPLAY,
       failedEvent.eventId,
       {
-        replayRequestId: replayLog.id,
+        replayRequestId: replayLog.id,  
         failedEventId: failedEvent.id,
         requestedBy,
         requestedAt: new Date().toISOString(),
