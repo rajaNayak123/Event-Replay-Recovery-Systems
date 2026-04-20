@@ -1,9 +1,10 @@
 import "dotenv/config";
-import { logger, prisma } from "shared";
+import { logger, prisma, ensureKafkaTopics } from "shared";
 import { startReplayWorker } from "./worker";
 
 async function main() {
   await prisma.$connect();
+  await ensureKafkaTopics();
   logger.info("Replay worker dependencies connected");
 
   await startReplayWorker();
