@@ -17,8 +17,7 @@ export const cacheService = {
 
   async delByPrefix(prefix: string) {
     const keys = await redis.keys(`${prefix}*`);
-    if (keys.length) {
-      await redis.del(...keys);
-    }
+    if (keys.length === 0) return; 
+    await redis.del(...keys);
   }
 };
