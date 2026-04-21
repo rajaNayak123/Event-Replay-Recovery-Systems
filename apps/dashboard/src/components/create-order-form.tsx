@@ -21,20 +21,31 @@ export function CreateOrderForm() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
+    // client-side validation before hitting the server
+    const parsedAmount = Number(amount);
+    if (!tenantId.trim()) {
+      setMessage({ type: "error", text: "Tenant ID is required" });
+      return;
+    }
+    if (!parsedAmount || parsedAmount <= 0) {
+      setMessage({ type: "error", text: "Amount must be a positive number" });
+      return;
+    }
+
     try {
       setLoading(true);
       setMessage(null);
 
       const result = await createOrder({
         tenantId,
-        amount: Number(amount),
+        amount: parsedAmount,
         currency,
         shouldFailInventory
       });
 
       setMessage({
         type: "success",
-        text: `Order ${result.order.orderNumber} created and event ${result.event.eventId} published`
+        text: `Order ${result.order.orderNumber} created — event ${result.event.eventId} published`
       });
 
       router.refresh();
@@ -65,6 +76,7 @@ export function CreateOrderForm() {
           <input
             value={tenantId}
             onChange={(e) => setTenantId(e.target.value)}
+            required
             className="w-full rounded-lg border border-white/10 bg-slate-900 px-4 py-2 text-sm text-white outline-none"
           />
         </div>
@@ -73,8 +85,11 @@ export function CreateOrderForm() {
           <label className="mb-2 block text-sm text-slate-300">Amount</label>
           <input
             type="number"
+            min="0.01"
+            step="0.01"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
+            required
             className="w-full rounded-lg border border-white/10 bg-slate-900 px-4 py-2 text-sm text-white outline-none"
           />
         </div>
@@ -84,6 +99,7 @@ export function CreateOrderForm() {
           <input
             value={currency}
             onChange={(e) => setCurrency(e.target.value)}
+            required
             className="w-full rounded-lg border border-white/10 bg-slate-900 px-4 py-2 text-sm text-white outline-none"
           />
         </div>
@@ -107,7 +123,7 @@ export function CreateOrderForm() {
             disabled={loading}
             className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-500 disabled:opacity-50"
           >
-            {loading ? "Creating..." : "Create Order"}
+            {loading ? "Creating…" : "Create Order"}
           </button>
         </div>
       </form>
