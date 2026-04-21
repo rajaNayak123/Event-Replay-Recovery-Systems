@@ -10,7 +10,7 @@ COPY packages/shared/package.json ./packages/shared/package.json
 
 RUN npm ci
 
-COPY tsconfig.base.json ./
+COPY tsconfig.json ./
 COPY prisma ./prisma
 COPY packages ./packages
 COPY services ./services
