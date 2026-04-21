@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  # Database
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: mysecret123
+      POSTGRES_DB: event_replay
+    ports:
+      - "5432:5432"
+
+  # Redis for Caching
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  # API Service
+  api:
+    build:
+      context: .
+      dockerfile: services/api/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://postgres:mysecret123@localhost:5432/event_replay
+      REDIS_URL: redis://redis:6379
+      KAFKA_BROKERS: host.docker.internal:9092
+    depends_on:
+      - postgres
+      - redis
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # Replay Worker
+  replay-worker:
+    build:
+      context: .
+      dockerfile: services/replay-worker/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://postgres:mysecret123@localhost:5432/event_replay
+      REDIS_URL: redis://redis:6379
+      KAFKA_BROKERS: host.docker.internal:9092
+    depends_on:
+      - postgres
+      - redis
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # Frontend Dashboard
+  dashboard:
+    build:
+      context: .
+      dockerfile: apps/dashboard/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    depends_on:
+      - api
