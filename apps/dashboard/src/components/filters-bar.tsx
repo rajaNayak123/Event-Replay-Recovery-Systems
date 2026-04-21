@@ -27,11 +27,19 @@ export function FiltersBar() {
     router.push(`/failed-events?${params.toString()}`);
   }
 
+  // support Enter key in search input
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter") {
+      updateQuery({ search });
+    }
+  }
+
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-white/10 bg-white/5 p-4 md:flex-row md:items-center">
       <input
         value={search}
         onChange={(e) => setSearch(e.target.value)}
+        onKeyDown={handleKeyDown} // FIX: trigger search on Enter
         placeholder="Search by eventId or orderId"
         className="w-full rounded-lg border border-white/10 bg-slate-900 px-4 py-2 text-sm text-white outline-none placeholder:text-slate-500"
       />
