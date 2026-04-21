@@ -9,7 +9,8 @@ export const inventoryService = {
       (env.INVENTORY_FAILURE_MODE === "random" &&
         Math.random() * 100 < env.INVENTORY_FAILURE_PERCENT);
 
-    if (failByFlag || failByMode) {
+    // Only fail if not explicitly told NOT to fail via the flag
+    if (shouldFailInventory !== false && (failByFlag || failByMode)) {
       throw new Error("Inventory reservation failed intentionally for demo");
     }
 
