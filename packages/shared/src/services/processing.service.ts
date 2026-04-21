@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../../../../generated/prisma";
 import { prisma } from "../db/prisma";
 import { BaseEvent } from "../events/types";
 import { paymentService } from "./payment.service";
