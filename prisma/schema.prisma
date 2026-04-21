@@ -22,7 +22,7 @@ enum FailedEventStatus {
 }
 
 enum ReplayLogStatus {
-  SUCCESS
+  SUCCEEDED
   FAILED
   REQUESTED
   SKIPPED_ALREADY_PROCESSED
