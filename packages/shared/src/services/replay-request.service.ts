@@ -1,4 +1,4 @@
-import { FailedEventStatus } from "@prisma/client";
+import { FailedEventStatus } from "../../../../generated/prisma/client";
 import { failedEventsCacheService } from "../cache/failed-events-cache.service";
 import { publishKafkaMessage } from "../kafka/producer";
 import { TOPICS } from "../kafka/topics";
