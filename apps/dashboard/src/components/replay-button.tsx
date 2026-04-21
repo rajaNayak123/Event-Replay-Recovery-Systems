@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { replayFailedEvent } from "@/lib/api";
 import { useRouter } from "next/navigation";
-import { ActionToast } from "./action-toast";
 
 type Props = {
   id: string;
@@ -13,29 +12,30 @@ type Props = {
 export function ReplayButton({ id, disabled }: Props) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{
-    type: "success" | "error" | "info";
+    type: "success" | "error";
     text: string;
   } | null>(null);
 
   const router = useRouter();
 
+  // auto-clear toast after 3 seconds so it doesn't linger in table cells
+  useEffect(() => {
+    if (!message) return;
+    const timer = setTimeout(() => setMessage(null), 3000);
+    return () => clearTimeout(timer);
+  }, [message]);
+
   async function handleReplay() {
     try {
       setLoading(true);
       setMessage(null);
-
       await replayFailedEvent(id, "dashboard-user");
-
-      setMessage({
-        type: "success",
-        text: "Replay requested successfully"
-      });
-
+      setMessage({ type: "success", text: "Replay requested" });
       router.refresh();
     } catch (error) {
       setMessage({
         type: "error",
-        text: error instanceof Error ? error.message : "Replay request failed"
+        text: error instanceof Error ? error.message : "Replay failed"
       });
     } finally {
       setLoading(false);
@@ -43,16 +43,27 @@ export function ReplayButton({ id, disabled }: Props) {
   }
 
   return (
-    <div className="space-y-2">
-      {message ? <ActionToast type={message.type} message={message.text} /> : null}
 
+    <div className="relative">
       <button
         onClick={handleReplay}
         disabled={disabled || loading}
         className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {loading ? "Replaying..." : "Replay"}
+        {loading ? "Replaying…" : "Replay"}
       </button>
+
+      {message && (
+        <div
+          className={`absolute bottom-full left-0 mb-1 whitespace-nowrap rounded-lg border px-3 py-1.5 text-xs font-medium ${
+            message.type === "success"
+              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-200"
+              : "border-red-500/30 bg-red-500/10 text-red-200"
+          }`}
+        >
+          {message.text}
+        </div>
+      )}
     </div>
   );
 }
