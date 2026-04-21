@@ -19,8 +19,7 @@ export async function handleReplayRequest(payload: {
     throw new Error("Failed event not found for replay");
   }
 
-  // If the event is already REPLAYED, skip silently — this can happen when
-  // Kafka redelivers a message after a restart
+  // If already REPLAYED, skip silently — Kafka may redeliver after a restart
   if (failed.status === FailedEventStatus.REPLAYED) {
     logger.warn(
       { failedEventId: failed.id },
@@ -29,39 +28,25 @@ export async function handleReplayRequest(payload: {
     return;
   }
 
-  try {
-    const replayEvent = {
-      ...payload.event,
-      payload: {
-        ...payload.event.payload,
-        // Override shouldFailInventory to false on replay so inventory
-        // reservation does not intentionally fail again
-        shouldFailInventory: false
-      },
-      meta: {
-        ...(payload.event.meta || {}),
-        isReplay: true,
-        replayOfFailedEventId: payload.failedEventId,
-        replayRequestedBy: payload.requestedBy,
-        originalStream: failed.streamName
-      }
-    };
+  // removed dead `replayEvent` variable build the event once and use it directly
+  const eventToReplay = {
+    ...payload.event,
+    payload: {
+      ...payload.event.payload,
+      shouldFailInventory: false 
+    },
+    meta: {
+      ...(payload.event.meta ?? {}),
+      isReplay: true,
+      replayOfFailedEventId: payload.failedEventId,
+      replayRequestedBy: payload.requestedBy,
+      originalStream: failed.streamName
+    }
+  };
 
+  try {
     const result = await processingService.processOrderCreated(
-      {
-        ...payload.event,
-        payload: {
-          ...payload.event.payload,
-          shouldFailInventory: false   
-        },
-        meta: {
-          ...(payload.event.meta || {}),
-          isReplay: true,
-          replayOfFailedEventId: payload.failedEventId,
-          replayRequestedBy: payload.requestedBy,
-          originalStream: failed.streamName
-        }
-      },
+      eventToReplay,
       "events:replay",
       "replay-worker"
     );
