@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../../../../generated/prisma";
 import { ApiError } from "./api-error";
 
 export function errorHandler(
@@ -36,7 +36,5 @@ export function errorHandler(
   const message =
     err instanceof Error ? err.message : "Internal server error";
 
-  return res.status(500).json({
-    message
-  });
+  return res.status(500).json({ message });
 }
