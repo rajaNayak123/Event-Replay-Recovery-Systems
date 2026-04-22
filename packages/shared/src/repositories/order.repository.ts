@@ -14,7 +14,7 @@ export const orderRepository = {
         amount: data.amount,
         currency: data.currency,
         orderNumber: data.orderNumber,
-        metadata: data.metadata
+        metadata: data.metadata as any
       }
     });
   },

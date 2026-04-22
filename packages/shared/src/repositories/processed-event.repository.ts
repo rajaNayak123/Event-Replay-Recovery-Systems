@@ -16,6 +16,6 @@ export const processedEventRepository = {
     checksum?: string;
     metadata?: Record<string, unknown>;
   }) {
-    return prisma.processedEvent.create({ data });
+    return prisma.processedEvent.create({ data: data as any });
   }
 };
