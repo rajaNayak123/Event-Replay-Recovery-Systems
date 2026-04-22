@@ -66,7 +66,7 @@ export async function handleReplayRequest(payload: {
 
     const logStatus = result.skipped
       ? ReplayLogStatus.SKIPPED_ALREADY_PROCESSED
-      : ReplayLogStatus.SUCCESS;
+      : ReplayLogStatus.SUCCEEDED;
 
     await safeUpdateReplayLog(payload.replayRequestId, {
       status: logStatus,
