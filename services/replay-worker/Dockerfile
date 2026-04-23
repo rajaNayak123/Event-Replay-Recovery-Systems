@@ -16,7 +16,17 @@ COPY packages ./packages
 COPY services ./services
 
 RUN npx prisma generate
-RUN npm run build --workspace=packages/shared
+
+# Clean up any stale build info and build shared package
+RUN rm -f packages/shared/tsconfig.tsbuildinfo && \
+    npm run build --workspace=packages/shared
+
+# Replace the symlink with actual files
+RUN rm -rf node_modules/shared && \
+    mkdir -p node_modules/shared && \
+    cp packages/shared/package.json node_modules/shared/package.json && \
+    cp -r packages/shared/dist node_modules/shared/dist
+
 RUN npm run build --workspace=services/replay-worker
 
 CMD ["node", "services/replay-worker/dist/index.js"]

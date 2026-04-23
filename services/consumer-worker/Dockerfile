@@ -10,13 +10,23 @@ COPY packages/shared/package.json ./packages/shared/package.json
 
 RUN npm ci
 
-COPY tsconfig.base.json ./
+COPY tsconfig.json ./
 COPY prisma ./prisma
 COPY packages ./packages
 COPY services ./services
 
 RUN npx prisma generate
-RUN npm run build --workspace=packages/shared
+
+# Clean up any stale build info and build shared package
+RUN rm -f packages/shared/tsconfig.tsbuildinfo && \
+    npm run build --workspace=packages/shared
+
+# Replace the symlink with actual files
+RUN rm -rf node_modules/shared && \
+    mkdir -p node_modules/shared && \
+    cp packages/shared/package.json node_modules/shared/package.json && \
+    cp -r packages/shared/dist node_modules/shared/dist
+
 RUN npm run build --workspace=services/consumer-worker
 
 CMD ["node", "services/consumer-worker/dist/index.js"]
