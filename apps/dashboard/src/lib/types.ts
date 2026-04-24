@@ -34,7 +34,11 @@ export type ReplayLog = {
   id: string;
   failedEventId: string;
   eventId: string;
-  requestedBy: string;
+  userId: string;
+  user?: {
+    name: string | null;
+    email: string | null;
+  } | null;
   status: ReplayLogStatus;
   requestPayload?: Record<string, unknown> | null;
   resultPayload?: Record<string, unknown> | null;
