@@ -11,6 +11,7 @@ type Props = {
 
 export function ReplayButton({ id, disabled }: Props) {
   const [loading, setLoading] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
@@ -31,26 +32,48 @@ export function ReplayButton({ id, disabled }: Props) {
       setMessage(null);
       await replayFailedEvent(id);
       setMessage({ type: "success", text: "Replay requested" });
+      setShowConfirm(false);
       router.refresh();
     } catch (error) {
       setMessage({
         type: "error",
         text: error instanceof Error ? error.message : "Replay failed"
       });
+      setShowConfirm(false);
     } finally {
       setLoading(false);
     }
   }
 
-  return (
+  if (showConfirm) {
+    return (
+      <div className="flex items-center gap-2 animate-in fade-in zoom-in duration-200">
+        <button
+          onClick={handleReplay}
+          disabled={loading}
+          className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-50"
+        >
+          {loading ? "Replaying..." : "Confirm"}
+        </button>
+        <button
+          onClick={() => setShowConfirm(false)}
+          disabled={loading}
+          className="rounded-lg bg-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/20 disabled:opacity-50"
+        >
+          Cancel
+        </button>
+      </div>
+    );
+  }
 
+  return (
     <div className="relative">
       <button
-        onClick={handleReplay}
+        onClick={() => setShowConfirm(true)}
         disabled={disabled || loading}
         className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {loading ? "Replaying…" : "Replay"}
+        Replay
       </button>
 
       {message && (
