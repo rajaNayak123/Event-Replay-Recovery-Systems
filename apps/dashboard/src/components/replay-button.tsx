@@ -29,7 +29,7 @@ export function ReplayButton({ id, disabled }: Props) {
     try {
       setLoading(true);
       setMessage(null);
-      await replayFailedEvent(id, "dashboard-user");
+      await replayFailedEvent(id);
       setMessage({ type: "success", text: "Replay requested" });
       router.refresh();
     } catch (error) {
