@@ -34,11 +34,8 @@ async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
     }
   } else {
     // If on client, use the local proxy to include the session token securely
-    if (path.startsWith("/api/")) {
-      fetchUrl = path.replace("/api/", "/api/proxy/");
-    } else {
-      fetchUrl = `/api/proxy${path}`;
-    }
+    const cleanPath = path.startsWith("/api/") ? path.slice(5) : (path.startsWith("/") ? path.slice(1) : path);
+    fetchUrl = `/api/proxy/${cleanPath}`;
   }
 
   const res = await fetch(fetchUrl, {
