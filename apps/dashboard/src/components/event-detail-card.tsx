@@ -67,7 +67,7 @@ export function EventDetailCard({ event }: { event: FailedEventDetail }) {
                   <div>
                     <p className="text-sm font-medium text-white">{log.status}</p>
                     <p className="text-xs text-slate-400">
-                      Requested by: {log.requestedBy}
+                      Requested by: {log.user?.name || log.userId}
                     </p>
                   </div>
                   <p className="text-xs text-slate-500">{formatDate(log.createdAt)}</p>
