@@ -4,7 +4,6 @@ import {
   FailedEventDetail,
   MetricsResponse
 } from "./types";
-import { cookies } from "next/headers";
 
 const API_BASE_URL =
   process.env.API_BASE_URL ||
@@ -22,14 +21,16 @@ async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
   // If on server, try to get the session token from cookies
   if (typeof window === "undefined") {
     try {
+      const { cookies } = await import("next/headers");
       const cookieStore = await cookies();
-      const token = cookieStore.get("authjs.session-token")?.value || cookieStore.get("__Secure-authjs.session-token")?.value;
+      const token =
+        cookieStore.get("authjs.session-token")?.value ||
+        cookieStore.get("__Secure-authjs.session-token")?.value;
       if (token) {
         headers["Authorization"] = `Bearer ${token}`;
       }
     } catch (e) {
-      console.log(e)
-      // Cookies might not be available in some contexts
+      console.log(e);
     }
   } else {
     // If on client, use the local proxy to include the session token securely
@@ -79,9 +80,7 @@ export async function getFailedEventById(id: string) {
 }
 
 export async function replayFailedEvent(id: string) {
-  return fetchJson(`/api/failed-events/${id}/replay`, {
-    method: "POST"
-  });
+  return fetchJson(`/api/failed-events/${id}/replay`, { method: "POST" });
 }
 
 export async function getMetrics() {
