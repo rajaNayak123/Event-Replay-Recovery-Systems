@@ -53,7 +53,7 @@ export const failedEventRepository = {
   findById(id: string) {
     return prisma.failedEvent.findUnique({
       where: { id },
-      include: { replayLogs: { orderBy: { createdAt: "desc" } } }
+      include: { replayLogs: { include: { user: true }, orderBy: { createdAt: "desc" } } }
     });
   },
 

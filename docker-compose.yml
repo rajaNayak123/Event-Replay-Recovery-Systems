@@ -116,6 +116,9 @@ services:
     environment:
       API_BASE_URL: http://api:8000
       NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
+      AUTH_SECRET: 6oSPg1sEJiVZjtPmzsOeSgwtOW1QpPbR/5cpyCxqQWoH
+      AUTH_TRUST_HOST: "true"
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
     depends_on:
       - api
 
