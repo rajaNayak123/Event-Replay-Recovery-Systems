@@ -6,7 +6,7 @@ const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:8000";
 
 async function handler(
   req: NextRequest,
-  { params }: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
   const session = await auth();
   if (!session) {
@@ -18,9 +18,9 @@ async function handler(
     cookieStore.get("authjs.session-token")?.value ||
     cookieStore.get("__Secure-authjs.session-token")?.value;
 
-  const path = params.path.join("/");
+  const { path } = await params; 
   const searchParams = req.nextUrl.searchParams.toString();
-  const url = `${API_BASE_URL}/api/${path}${
+  const url = `${API_BASE_URL}/api/${path.join("/")}${
     searchParams ? `?${searchParams}` : ""
   }`;
 
