@@ -4,6 +4,7 @@ import {
   FailedEventDetail,
   MetricsResponse
 } from "./types";
+import { cookies } from "next/headers";
 
 const API_BASE_URL =
   process.env.API_BASE_URL ||
@@ -11,13 +12,38 @@ const API_BASE_URL =
   "http://localhost:8000";
 
 async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_BASE_URL}${path}`, {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(init?.headers as Record<string, string> || {})
+  };
+
+  let fetchUrl = `${API_BASE_URL}${path}`;
+
+  // If on server, try to get the session token from cookies
+  if (typeof window === "undefined") {
+    try {
+      const cookieStore = await cookies();
+      const token = cookieStore.get("authjs.session-token")?.value || cookieStore.get("__Secure-authjs.session-token")?.value;
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+    } catch (e) {
+      console.log(e)
+      // Cookies might not be available in some contexts
+    }
+  } else {
+    // If on client, use the local proxy to include the session token securely
+    if (path.startsWith("/api/")) {
+      fetchUrl = path.replace("/api/", "/api/proxy/");
+    } else {
+      fetchUrl = `/api/proxy${path}`;
+    }
+  }
+
+  const res = await fetch(fetchUrl, {
     ...init,
     cache: "no-store",
-    headers: {
-      "Content-Type": "application/json",
-      ...(init?.headers || {})
-    }
+    headers
   });
 
   const contentType = res.headers.get("content-type");
@@ -52,10 +78,9 @@ export async function getFailedEventById(id: string) {
   return fetchJson<FailedEventDetail>(`/api/failed-events/${id}`);
 }
 
-export async function replayFailedEvent(id: string, requestedBy = "dashboard-user") {
+export async function replayFailedEvent(id: string) {
   return fetchJson(`/api/failed-events/${id}/replay`, {
-    method: "POST",
-    body: JSON.stringify({ requestedBy })
+    method: "POST"
   });
 }
 

@@ -18,7 +18,8 @@
   "type": "commonjs",
   "workspaces": [
     "services/*",
-    "packages/*"
+    "packages/*",
+    "apps/*"
   ],
   "dependencies": {
     "@prisma/client": "^6.19.3",
@@ -26,7 +27,7 @@
     "prisma": "^6.19.3",
     "tsx": "^4.21.0",
     "turbo": "^2.9.6",
-    "typescript": "^6.0.2"
+    "typescript": "^5.4.0"
   },
   "devDependencies": {
     "@types/node": "^25.6.0"

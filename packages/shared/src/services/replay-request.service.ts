@@ -6,7 +6,7 @@ import { failedEventRepository } from "../repositories/failed-event.repository";
 import { replayLogRepository } from "../repositories/replay-log.repository";
 
 export const replayRequestService = {
-  async requestReplay(failedEventId: string, requestedBy: string) {
+  async requestReplay(failedEventId: string, userId: string, userName: string) {
     const failedEvent = await failedEventRepository.findById(failedEventId);
 
     if (!failedEvent) {
@@ -25,16 +25,17 @@ export const replayRequestService = {
     const replayLog = await replayLogRepository.create({
       failedEventId,
       eventId: failedEvent.eventId,
-      requestedBy,
+      userId,
       requestPayload: {
         failedEventId,
-        requestedBy
+        userId,
+        requestedBy: userName
       }
     });
 
     await failedEventRepository.updateStatus(failedEventId, {
       status: FailedEventStatus.REPLAY_PENDING,
-      replayRequestedBy: requestedBy,
+      replayRequestedBy: userName,
       replayMetadata: {
         replayLogId: replayLog.id,
         requestedAt: new Date().toISOString()
@@ -49,7 +50,7 @@ export const replayRequestService = {
       {
         replayRequestId: replayLog.id,  
         failedEventId: failedEvent.id,
-        requestedBy,
+        requestedBy: userName,
         requestedAt: new Date().toISOString(),
         event: failedEvent.originalPayload
       },
