@@ -17,33 +17,45 @@ declare global {
   }
 }
 
-export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader?.startsWith("Bearer ")) {
-    throw new ApiError(401, "Authentication required");
-  }
-
-  const token = authHeader.split(" ")[1];
-  const secret = process.env.AUTH_SECRET;
-
-  if (!secret) {
-    console.error("AUTH_SECRET is not defined");
-    throw new ApiError(500, "Server configuration error");
-  }
-
+export const authMiddleware = (req: Request, res: Response, next: NextFunction): void => {
   try {
-    const decoded = jwt.verify(token, secret) as any;
-    
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader?.startsWith("Bearer ")) {
+      return next(new ApiError(401, "Authentication required"));
+    }
+
+    const token = authHeader.split(" ")[1];
+    if (!token) {
+      return next(new ApiError(401, "Authentication required"));
+    }
+
+    const secret = process.env.AUTH_SECRET;
+
+    if (!secret) {
+      console.error("AUTH_SECRET is not defined in environment");
+      return next(new ApiError(500, "Server configuration error"));
+    }
+
+    const decoded = jwt.verify(token, secret) as jwt.JwtPayload;
+
     req.user = {
-      id: decoded.id || decoded.sub,
-      name: decoded.name,
-      email: decoded.email,
-      role: decoded.role || "VIEWER",
+      id: (decoded.id as string) || (decoded.sub as string),
+      name: decoded.name as string | undefined,
+      email: decoded.email as string | undefined,
+      role: (decoded.role as string) || "VIEWER",
     };
 
     next();
   } catch (error) {
-    throw new ApiError(401, "Invalid or expired token");
+
+    if (
+      error instanceof jwt.TokenExpiredError ||
+      error instanceof jwt.JsonWebTokenError ||
+      error instanceof jwt.NotBeforeError
+    ) {
+      return next(new ApiError(401, "Invalid or expired token"));
+    }
+    next(error);
   }
 };
