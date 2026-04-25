@@ -18,7 +18,14 @@ async function handler(
     cookieStore.get("authjs.session-token")?.value ||
     cookieStore.get("__Secure-authjs.session-token")?.value;
 
-  const { path } = await params; 
+  if (!token) {
+    return NextResponse.json(
+      { message: "Session token not found" },
+      { status: 401 }
+    );
+  }
+
+  const { path } = await params;
   const searchParams = req.nextUrl.searchParams.toString();
   const url = `${API_BASE_URL}/api/${path.join("/")}${
     searchParams ? `?${searchParams}` : ""
