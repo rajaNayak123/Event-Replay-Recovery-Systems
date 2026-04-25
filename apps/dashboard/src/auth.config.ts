@@ -2,6 +2,7 @@ import type { NextAuthConfig } from "next-auth";
 import GitHub from "next-auth/providers/github";
 
 export const authConfig = {
+  secret: process.env.AUTH_SECRET,
   providers: [
     GitHub({
       clientId: process.env.AUTH_GITHUB_ID,
@@ -17,7 +18,7 @@ export const authConfig = {
       const isLoginPage = nextUrl.pathname === "/login";
 
       if (!isLoggedIn && !isLoginPage) {
-        return false; // Redirect to login
+        return false; 
       }
       if (isLoggedIn && isLoginPage) {
         return Response.redirect(new URL("/", nextUrl));

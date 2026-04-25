@@ -58,6 +58,9 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       REDIS_URL: redis://redis:6379
       KAFKA_BROKERS: kafka:29092
+      # FIX: AUTH_SECRET was missing from api service.
+      # The dashboard signs JWTs with this secret; the api must verify with the same secret.
+      AUTH_SECRET: 6oSPg1sEJiVZjtPmzsOeSgwtOW1QpPbR/5cpyCxqQWoH
     depends_on:
       postgres:
         condition: service_healthy
