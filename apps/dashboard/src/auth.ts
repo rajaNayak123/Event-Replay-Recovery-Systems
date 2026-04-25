@@ -41,9 +41,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   jwt: {
-    encode: async ({ token, secret }) => {
+    encode: async ({ token, secret, maxAge }) => {
       const activeSecret = Array.isArray(secret) ? secret[0] : secret;
-      return jwt.sign(token!, activeSecret);
+      const { exp, iat, jti, ...rest } = token as any;
+
+      return jwt.sign(rest, activeSecret, {
+        expiresIn: maxAge ?? 60 * 60 * 24 * 30,
+      });
     },
     decode: async ({ token, secret }) => {
       const activeSecret = Array.isArray(secret) ? secret[0] : secret;
