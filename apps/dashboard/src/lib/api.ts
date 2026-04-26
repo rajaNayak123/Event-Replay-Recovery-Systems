@@ -27,7 +27,7 @@ async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
 
   // Always use server-side auth() to retrieve the token securely
   const session = await auth();
-  const accessToken = (session as any)?.accessToken;
+  const accessToken = (session as any)?.user?.accessToken;
 
   if (accessToken) {
     headers["Authorization"] = `Bearer ${accessToken}`;
