@@ -5,7 +5,7 @@ export const replayLogRepository = {
   create(data: {
     failedEventId: string;
     eventId: string;
-    requestedBy: string;
+    userId: string;
     status?: ReplayLogStatus;
     requestPayload?: unknown;
   }) {
@@ -13,7 +13,7 @@ export const replayLogRepository = {
       data: {
         failedEventId: data.failedEventId,
         eventId: data.eventId,
-        requestedBy: data.requestedBy,
+        userId: data.userId,
         status: data.status,
         requestPayload: data.requestPayload as any
       }

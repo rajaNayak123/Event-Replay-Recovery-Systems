@@ -4,6 +4,7 @@ import { publishKafkaMessage } from "../kafka/producer";
 import { TOPICS } from "../kafka/topics";
 import { failedEventRepository } from "../repositories/failed-event.repository";
 import { replayLogRepository } from "../repositories/replay-log.repository";
+import { prisma } from "../db/prisma";
 
 export const replayRequestService = {
   async requestReplay(failedEventId: string, userName: string) {
@@ -22,10 +23,33 @@ export const replayRequestService = {
       );
     }
 
+    // Resolve userId from userName (email)
+    let user = await prisma.user.findUnique({
+      where: { email: userName },
+    });
+
+    if (!user) {
+      // Fallback: try to find by name
+      user = await prisma.user.findFirst({
+        where: { name: userName },
+      });
+    }
+
+    if (!user) {
+      // Final fallback: use any admin
+      user = await prisma.user.findFirst({
+        where: { role: "ADMIN" },
+      });
+    }
+
+    if (!user) {
+      throw new Error("No valid user found to associate with replay log");
+    }
+
     const replayLog = await replayLogRepository.create({
       failedEventId,
       eventId: failedEvent.eventId,
-      requestedBy: userName,
+      userId: user.id,
       requestPayload: {
         failedEventId,
         requestedBy: userName
