@@ -64,7 +64,11 @@ export function ReplayButton({ id, disabled }: Props) {
               value={scheduledAt}
               onChange={(e) => setScheduledAt(e.target.value)}
               className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-              min={new Date().toISOString().slice(0, 16)}
+              min={(() => {
+                const now = new Date();
+                const offset = now.getTimezoneOffset() * 60000;
+                return new Date(now.getTime() - offset).toISOString().slice(0, 16);
+              })()}
             />
           )}
         </div>
