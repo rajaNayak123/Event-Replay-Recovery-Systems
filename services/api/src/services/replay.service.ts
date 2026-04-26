@@ -2,9 +2,9 @@ import { replayRequestService } from "shared";
 import { ApiError } from "../lib/api-error";
 
 export const replayService = {
-  async requestReplay(id: string, userName: string, scheduledAt?: string) {
+  async requestReplay(id: string, userId: string, scheduledAt?: string) {
     try {
-      return await replayRequestService.requestReplay(id, userName, scheduledAt);
+      return await replayRequestService.requestReplay(id, userId, scheduledAt);
 
     } catch (error) {
       if (error instanceof Error && error.message.includes("not found")) {

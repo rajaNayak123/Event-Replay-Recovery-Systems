@@ -26,12 +26,11 @@ export async function getFailedEventById(req: Request, res: Response) {
 
 export async function replayFailedEvent(req: Request, res: Response) {
   const user = await verifyToken(req);
-  const userName = user.email;
   const { scheduledAt } = req.body;
   
   const result = await replayService.requestReplay(
     req.params.id as string,
-    userName,
+    user.id,
     scheduledAt
   );
 

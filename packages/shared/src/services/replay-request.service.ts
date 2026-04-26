@@ -8,7 +8,7 @@ import { scheduledReplayService } from "./scheduled-replay.service";
 import { prisma } from "../db/prisma";
 
 export const replayRequestService = {
-  async requestReplay(failedEventId: string, userName: string, scheduledAt?: string) {
+  async requestReplay(failedEventId: string, userId: string, scheduledAt?: string) {
     const failedEvent = await failedEventRepository.findById(failedEventId);
 
     if (!failedEvent) {
@@ -24,28 +24,16 @@ export const replayRequestService = {
       );
     }
 
-    // Resolve userId from userName (email)
-    let user = await prisma.user.findUnique({
-      where: { email: userName },
+    // Resolve user from ID
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
     });
 
     if (!user) {
-      // Fallback: try to find by name
-      user = await prisma.user.findFirst({
-        where: { name: userName },
-      });
+      throw new Error("User not found");
     }
 
-    if (!user) {
-      // Final fallback: use any admin
-      user = await prisma.user.findFirst({
-        where: { role: "ADMIN" },
-      });
-    }
-
-    if (!user) {
-      throw new Error("No valid user found to associate with replay log");
-    }
+    const userName = user.email || user.name || "Unknown User";
 
     const replayLog = await replayLogRepository.create({
       failedEventId,
