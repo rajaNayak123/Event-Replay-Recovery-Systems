@@ -6,6 +6,7 @@ import { ApiError } from "../lib/api-error";
 import { verifyToken } from "../lib/auth";
 
 export async function listFailedEvents(req: Request, res: Response) {
+  await verifyToken(req);
   const { status, search } = req.query;
   const data = await failedEventService.list({
     status: status as string | undefined,
@@ -15,6 +16,7 @@ export async function listFailedEvents(req: Request, res: Response) {
 }
 
 export async function getFailedEventById(req: Request, res: Response) {
+  await verifyToken(req);
   const item = await failedEventService.getById(req.params.id as string);
   if (!item) {
     throw new ApiError(404, "Failed event not found");
@@ -24,7 +26,7 @@ export async function getFailedEventById(req: Request, res: Response) {
 
 export async function replayFailedEvent(req: Request, res: Response) {
   const user = await verifyToken(req);
-  const userName = user?.email || "System";
+  const userName = user.email;
   const { scheduledAt } = req.body;
   
   const result = await replayService.requestReplay(

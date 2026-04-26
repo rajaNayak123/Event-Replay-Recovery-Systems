@@ -1,5 +1,6 @@
 import { jwtVerify } from "jose";
 import { Request } from "express";
+import { ApiError } from "./api-error";
 
 const SECRET = new TextEncoder().encode(
   process.env.AUTH_SECRET || "6oSPg1sEJiVZjtPmzsOeSgwtOW1QpPbR/5cpyCxqQWoH"
@@ -8,7 +9,7 @@ const SECRET = new TextEncoder().encode(
 export async function verifyToken(req: Request) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return null;
+    throw new ApiError(401, "Authentication required: Missing or invalid Authorization header");
   }
 
   const token = authHeader.split(" ")[1];
@@ -22,8 +23,6 @@ export async function verifyToken(req: Request) {
       role: payload.role as string,
     };
   } catch (error) {
-    // If verification fails, it might be because the token is encrypted (JWE) 
-    // or just invalid. For now, we return null as requested.
-    return null;
+    throw new ApiError(401, "Authentication failed: Token is invalid or expired");
   }
 }
