@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { SignOutButton } from "./sign-out-button";
-import { Search, Bell, User } from "lucide-react";
+import { SearchBar } from "./search-bar";
+import { Bell, User } from "lucide-react";
 
 export async function DashboardHeader() {
   const session = await auth();
@@ -8,14 +9,7 @@ export async function DashboardHeader() {
   return (
     <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between px-8 bg-slate-950/20 backdrop-blur-md border-b border-white/5">
       <div className="flex flex-1 items-center gap-4">
-        <div className="relative w-96 group">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
-          <input 
-            type="text" 
-            placeholder="Search events, orders, or replay IDs..."
-            className="w-full rounded-full border border-white/5 bg-white/5 py-2 pl-10 pr-4 text-sm text-white placeholder-slate-500 focus:border-indigo-500/50 focus:bg-white/10 focus:outline-none transition-all"
-          />
-        </div>
+        <SearchBar />
       </div>
 
       <div className="flex items-center gap-5">
