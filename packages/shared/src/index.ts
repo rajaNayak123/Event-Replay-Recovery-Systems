@@ -20,6 +20,8 @@ export * from "./services/failed-event.service";
 export * from "./services/processing.service";
 export * from "./services/replay-request.service";
 export * from "./services/retry.service";
+export * from "./services/scheduled-replay.service";
 export * from "./utils/ids";
+
 export * from "./utils/json";
 export * from "./utils/sleep";

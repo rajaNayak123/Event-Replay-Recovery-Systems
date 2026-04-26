@@ -126,6 +126,25 @@ services:
       kafka:
         condition: service_started
 
+  # Scheduled Replay Worker
+  scheduled-replay-worker:
+    build:
+      context: .
+      dockerfile: services/scheduled-replay-worker/Dockerfile
+    container_name: scheduled-replay-worker
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      REDIS_URL: redis://redis:6379
+      KAFKA_BROKERS: kafka:29092
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      kafka:
+        condition: service_started
+
   # Frontend Dashboard
 
   dashboard:

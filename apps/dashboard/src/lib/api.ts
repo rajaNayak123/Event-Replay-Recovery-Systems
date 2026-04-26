@@ -83,9 +83,13 @@ export async function getFailedEventById(id: string) {
   return fetchJson<FailedEventDetail>(`/api/failed-events/${id}`);
 }
 
-export async function replayFailedEvent(id: string) {
-  return fetchJson(`/api/failed-events/${id}/replay`, { method: "POST" });
+export async function replayFailedEvent(id: string, scheduledAt?: string) {
+  return fetchJson(`/api/failed-events/${id}/replay`, { 
+    method: "POST",
+    body: JSON.stringify({ scheduledAt })
+  });
 }
+
 
 export async function getMetrics() {
   return fetchJson<MetricsResponse>("/api/metrics");

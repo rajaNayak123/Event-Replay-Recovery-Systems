@@ -4,10 +4,11 @@ import { publishKafkaMessage } from "../kafka/producer";
 import { TOPICS } from "../kafka/topics";
 import { failedEventRepository } from "../repositories/failed-event.repository";
 import { replayLogRepository } from "../repositories/replay-log.repository";
+import { scheduledReplayService } from "./scheduled-replay.service";
 import { prisma } from "../db/prisma";
 
 export const replayRequestService = {
-  async requestReplay(failedEventId: string, userName: string) {
+  async requestReplay(failedEventId: string, userName: string, scheduledAt?: string) {
     const failedEvent = await failedEventRepository.findById(failedEventId);
 
     if (!failedEvent) {
@@ -52,7 +53,8 @@ export const replayRequestService = {
       userId: user.id,
       requestPayload: {
         failedEventId,
-        requestedBy: userName
+        requestedBy: userName,
+        scheduledAt
       }
     });
 
@@ -62,49 +64,60 @@ export const replayRequestService = {
         replayRequestedBy: userName,
         replayMetadata: {
           replayLogId: replayLog.id,
-          requestedAt: new Date().toISOString()
+          requestedAt: new Date().toISOString(),
+          scheduledAt: scheduledAt || null
         }
       });
 
-      // Publish with the freshly created replayLog.id so the replay worker
-      // can correctly update THIS log entry, not a stale one from a prior attempt
-      await publishKafkaMessage(
-        TOPICS.ORDER_REPLAY,
-        failedEvent.eventId,
-        {
-          replayRequestId: replayLog.id,  
+      if (scheduledAt) {
+        // Schedule in Redis sorted set instead of immediate Kafka publication
+        await scheduledReplayService.schedule({
+          replayRequestId: replayLog.id,
           failedEventId: failedEvent.id,
           requestedBy: userName,
-          requestedAt: new Date().toISOString(),
-          event: failedEvent.originalPayload
-        },
-        {
-          replayRequestId: replayLog.id,
-          eventId: failedEvent.eventId,
-          replay: "true"
-        }
-      );
+          event: failedEvent.originalPayload,
+          scheduledAt: new Date(scheduledAt).getTime()
+        });
+      } else {
+        // Immediate publication to Kafka
+        await publishKafkaMessage(
+          TOPICS.ORDER_REPLAY,
+          failedEvent.eventId,
+          {
+            replayRequestId: replayLog.id,  
+            failedEventId: failedEvent.id,
+            requestedBy: userName,
+            requestedAt: new Date().toISOString(),
+            event: failedEvent.originalPayload
+          },
+          {
+            replayRequestId: replayLog.id,
+            eventId: failedEvent.eventId,
+            replay: "true"
+          }
+        );
+      }
     } catch (error: any) {
-      // Revert status if Kafka publish fails to prevent the event from being stuck in REPLAY_PENDING
+      // Revert status if anything fails
       await failedEventRepository.updateStatus(failedEventId, {
         status: failedEvent.status,
       });
 
       await replayLogRepository.update(replayLog.id, {
         status: "FAILED",
-        errorMessage: `Failed to initiate replay: ${error.message}`
+        errorMessage: `Failed to ${scheduledAt ? 'schedule' : 'initiate'} replay: ${error.message}`
       });
 
       throw error;
     }
-
 
     await failedEventsCacheService.invalidateForFailedEvent(failedEventId);
 
     return {
       replayAccepted: true,
       replayLogId: replayLog.id,
-      failedEventId: failedEvent.id
+      failedEventId: failedEvent.id,
+      scheduled: !!scheduledAt
     };
   }
 };

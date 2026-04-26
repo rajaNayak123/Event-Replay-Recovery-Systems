@@ -10,8 +10,10 @@
     "dev:consumer": "npm --workspace=services/consumer-worker run dev",
     "dev:replay": "npm --workspace=services/replay-worker run dev",
     "dev:dlq": "npm --workspace=services/dlq-monitor run dev",
+    "dev:scheduled-replay": "npm --workspace=services/scheduled-replay-worker run dev",
     "build": "turbo build",
     "dev": "turbo run dev"
+
 
   },
   "keywords": [],
