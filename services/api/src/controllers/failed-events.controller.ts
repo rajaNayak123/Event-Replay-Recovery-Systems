@@ -21,15 +21,9 @@ export async function getFailedEventById(req: Request, res: Response) {
 }
 
 export async function replayFailedEvent(req: Request, res: Response) {
-  const user = req.user;
-  if (!user) {
-    throw new ApiError(401, "User not authenticated");
-  }
-
   const result = await replayService.requestReplay(
     req.params.id as string,
-    user.id,
-    user.name || "Unknown User"
+    "System (Public)"
   );
   return res.status(202).json(result);
 }

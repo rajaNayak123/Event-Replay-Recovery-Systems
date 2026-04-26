@@ -16,27 +16,7 @@ async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
     ...(init?.headers as Record<string, string> || {})
   };
 
-  let fetchUrl = `${API_BASE_URL}${path}`;
-
-  // If on server, try to get the session token from cookies
-  if (typeof window === "undefined") {
-    try {
-      const { cookies } = await import("next/headers");
-      const cookieStore = await cookies();
-      const token =
-        cookieStore.get("authjs.session-token")?.value ||
-        cookieStore.get("__Secure-authjs.session-token")?.value;
-      if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
-      }
-    } catch (e) {
-      console.log(e);
-    }
-  } else {
-    // If on client, use the local proxy to include the session token securely
-    const cleanPath = path.startsWith("/api/") ? path.slice(5) : (path.startsWith("/") ? path.slice(1) : path);
-    fetchUrl = `/api/proxy/${cleanPath}`;
-  }
+  const fetchUrl = `${API_BASE_URL}${path}`;
 
   const res = await fetch(fetchUrl, {
     ...init,

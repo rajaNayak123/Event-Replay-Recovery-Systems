@@ -6,7 +6,7 @@ import { failedEventRepository } from "../repositories/failed-event.repository";
 import { replayLogRepository } from "../repositories/replay-log.repository";
 
 export const replayRequestService = {
-  async requestReplay(failedEventId: string, userId: string, userName: string) {
+  async requestReplay(failedEventId: string, userName: string) {
     const failedEvent = await failedEventRepository.findById(failedEventId);
 
     if (!failedEvent) {
@@ -25,10 +25,9 @@ export const replayRequestService = {
     const replayLog = await replayLogRepository.create({
       failedEventId,
       eventId: failedEvent.eventId,
-      userId,
+      requestedBy: userName,
       requestPayload: {
         failedEventId,
-        userId,
         requestedBy: userName
       }
     });
