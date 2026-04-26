@@ -56,33 +56,48 @@ export const replayRequestService = {
       }
     });
 
-    await failedEventRepository.updateStatus(failedEventId, {
-      status: FailedEventStatus.REPLAY_PENDING,
-      replayRequestedBy: userName,
-      replayMetadata: {
-        replayLogId: replayLog.id,
-        requestedAt: new Date().toISOString()
-      }
-    });
+    try {
+      await failedEventRepository.updateStatus(failedEventId, {
+        status: FailedEventStatus.REPLAY_PENDING,
+        replayRequestedBy: userName,
+        replayMetadata: {
+          replayLogId: replayLog.id,
+          requestedAt: new Date().toISOString()
+        }
+      });
 
-    // Publish with the freshly created replayLog.id so the replay worker
-    // can correctly update THIS log entry, not a stale one from a prior attempt
-    await publishKafkaMessage(
-      TOPICS.ORDER_REPLAY,
-      failedEvent.eventId,
-      {
-        replayRequestId: replayLog.id,  
-        failedEventId: failedEvent.id,
-        requestedBy: userName,
-        requestedAt: new Date().toISOString(),
-        event: failedEvent.originalPayload
-      },
-      {
-        replayRequestId: replayLog.id,
-        eventId: failedEvent.eventId,
-        replay: "true"
-      }
-    );
+      // Publish with the freshly created replayLog.id so the replay worker
+      // can correctly update THIS log entry, not a stale one from a prior attempt
+      await publishKafkaMessage(
+        TOPICS.ORDER_REPLAY,
+        failedEvent.eventId,
+        {
+          replayRequestId: replayLog.id,  
+          failedEventId: failedEvent.id,
+          requestedBy: userName,
+          requestedAt: new Date().toISOString(),
+          event: failedEvent.originalPayload
+        },
+        {
+          replayRequestId: replayLog.id,
+          eventId: failedEvent.eventId,
+          replay: "true"
+        }
+      );
+    } catch (error: any) {
+      // Revert status if Kafka publish fails to prevent the event from being stuck in REPLAY_PENDING
+      await failedEventRepository.updateStatus(failedEventId, {
+        status: failedEvent.status,
+      });
+
+      await replayLogRepository.update(replayLog.id, {
+        status: "FAILED",
+        errorMessage: `Failed to initiate replay: ${error.message}`
+      });
+
+      throw error;
+    }
+
 
     await failedEventsCacheService.invalidateForFailedEvent(failedEventId);
 
