@@ -2,8 +2,14 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-COPY apps/dashboard/package.json ./apps/dashboard/package.json
 COPY packages/shared/package.json ./packages/shared/package.json
+COPY services/api/package.json ./services/api/package.json
+COPY services/consumer-worker/package.json ./services/consumer-worker/package.json
+COPY services/replay-worker/package.json ./services/replay-worker/package.json
+COPY services/dlq-monitor/package.json ./services/dlq-monitor/package.json
+COPY services/scheduled-replay-worker/package.json ./services/scheduled-replay-worker/package.json
+COPY apps/dashboard/package.json ./apps/dashboard/package.json
+
 
 RUN npm ci --workspace=apps/dashboard
 
