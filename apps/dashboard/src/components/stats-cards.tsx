@@ -16,28 +16,48 @@ export function StatsCards({ metrics }: { metrics: MetricsResponse }) {
       label: "Critical Failures", 
       value: map.get("FAILED") ?? 0, 
       icon: AlertCircle, 
-      color: "rose",
+      styles: {
+        iconBg: "bg-rose-500/10",
+        iconBorder: "border-rose-500/20",
+        iconText: "text-rose-400",
+        glow: "bg-rose-500/5 group-hover:bg-rose-500/10"
+      },
       trend: "+2% from last hour"
     },
     { 
       label: "Awaiting Replay", 
       value: map.get("REPLAY_PENDING") ?? 0, 
       icon: Clock, 
-      color: "amber",
+      styles: {
+        iconBg: "bg-amber-500/10",
+        iconBorder: "border-amber-500/20",
+        iconText: "text-amber-400",
+        glow: "bg-amber-500/5 group-hover:bg-amber-500/10"
+      },
       trend: "Priority queue active"
     },
     { 
       label: "Successfully Replayed", 
       value: map.get("REPLAYED") ?? 0, 
       icon: CheckCircle2, 
-      color: "emerald",
+      styles: {
+        iconBg: "bg-emerald-500/10",
+        iconBorder: "border-emerald-500/20",
+        iconText: "text-emerald-400",
+        glow: "bg-emerald-500/5 group-hover:bg-emerald-500/10"
+      },
       trend: "85% recovery rate"
     },
     { 
       label: "Exhausted Retries", 
       value: map.get("REPLAY_FAILED") ?? 0, 
       icon: XCircle, 
-      color: "red",
+      styles: {
+        iconBg: "bg-red-500/10",
+        iconBorder: "border-red-500/20",
+        iconText: "text-red-400",
+        glow: "bg-red-500/5 group-hover:bg-red-500/10"
+      },
       trend: "Manual audit required"
     }
   ];
@@ -58,8 +78,8 @@ export function StatsCards({ metrics }: { metrics: MetricsResponse }) {
                   {card.value}
                 </h4>
               </div>
-              <div className={`rounded-2xl bg-${card.color}-500/10 p-3 border border-${card.color}-500/20`}>
-                <Icon className={`h-6 w-6 text-${card.color}-400`} />
+              <div className={`rounded-2xl p-3 border ${card.styles.iconBg} ${card.styles.iconBorder}`}>
+                <Icon className={`h-6 w-6 ${card.styles.iconText}`} />
               </div>
             </div>
             
@@ -69,7 +89,7 @@ export function StatsCards({ metrics }: { metrics: MetricsResponse }) {
             </div>
 
             {/* Decorative background glow */}
-            <div className={`absolute -right-4 -bottom-4 h-24 w-24 rounded-full bg-${card.color}-500/5 blur-3xl group-hover:bg-${card.color}-500/10 transition-colors`} />
+            <div className={`absolute -right-4 -bottom-4 h-24 w-24 rounded-full blur-3xl transition-colors ${card.styles.glow}`} />
           </div>
         );
       })}
