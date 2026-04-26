@@ -3,7 +3,8 @@ import {
   CreateOrderResponse,
   FailedEvent,
   FailedEventDetail,
-  MetricsResponse
+  MetricsResponse,
+  ReplayLog
 } from "./types";
 
 const API_BASE_URL =
@@ -93,6 +94,16 @@ export async function replayFailedEvent(id: string, scheduledAt?: string) {
 
 export async function getMetrics() {
   return fetchJson<MetricsResponse>("/api/metrics");
+}
+
+export async function getReplayLogs(params?: {
+  status?: string;
+}) {
+  const query = new URLSearchParams();
+  if (params?.status) query.set("status", params.status);
+
+  const suffix = query.toString() ? `?${query.toString()}` : "";
+  return fetchJson<ReplayLog[]>("/api/replay-logs" + suffix);
 }
 
 export async function createOrder(input: {

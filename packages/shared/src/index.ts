@@ -1,4 +1,5 @@
 export * from "./cache/cache-keys";
+export { ReplayLogStatus, FailedEventStatus, UserRole } from "../../../generated/prisma";
 export * from "./cache/cache.service";
 export * from "./cache/failed-events-cache.service";
 export * from "./config/env";

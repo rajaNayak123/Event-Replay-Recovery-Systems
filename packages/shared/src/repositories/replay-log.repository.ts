@@ -35,5 +35,25 @@ export const replayLogRepository = {
         resultPayload: data.resultPayload as any
       }
     });
+  },
+
+  list(filters?: { status?: ReplayLogStatus }) {
+    return prisma.replayLog.findMany({
+      where: {
+        status: filters?.status
+      },
+      include: {
+        failedEvent: true,
+        user: {
+          select: {
+            name: true,
+            email: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: "desc"
+      }
+    });
   }
 };

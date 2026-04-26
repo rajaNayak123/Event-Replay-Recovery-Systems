@@ -6,6 +6,7 @@ import healthRoutes from "./routes/health.routes";
 import ordersRoutes from "./routes/orders.routes";
 import failedEventsRoutes from "./routes/failed-events.routes";
 import metricsRoutes from "./routes/metrics.routes";
+import replayLogsRoutes from "./routes/replay-logs.routes";
 import { errorHandler } from "./lib/error-handler";
 import { notFoundHandler } from "./lib/not-found";
 
@@ -28,6 +29,7 @@ export function createApp() {
   app.use("/api/orders", ordersRoutes);
   app.use("/api/failed-events", failedEventsRoutes);
   app.use("/api/metrics", metricsRoutes);
+  app.use("/api/replay-logs", replayLogsRoutes);
 
   app.use(notFoundHandler);
   app.use(errorHandler);
