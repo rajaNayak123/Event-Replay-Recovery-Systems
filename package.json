@@ -9,8 +9,10 @@
     "dev:api": "npm --workspace=services/api run dev",
     "dev:consumer": "npm --workspace=services/consumer-worker run dev",
     "dev:replay": "npm --workspace=services/replay-worker run dev",
+    "dev:dlq": "npm --workspace=services/dlq-monitor run dev",
     "build": "turbo build",
     "dev": "turbo run dev"
+
   },
   "keywords": [],
   "author": "",
