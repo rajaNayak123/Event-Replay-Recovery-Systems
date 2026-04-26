@@ -6,6 +6,7 @@ export const orderRepository = {
     amount: number;
     currency: string;
     orderNumber: string;
+    idempotencyKey?: string;
     metadata?: Record<string, unknown>;
   }) {
     return prisma.order.create({
@@ -14,6 +15,7 @@ export const orderRepository = {
         amount: data.amount,
         currency: data.currency,
         orderNumber: data.orderNumber,
+        idempotencyKey: data.idempotencyKey,
         metadata: data.metadata as any
       }
     });
@@ -28,5 +30,9 @@ export const orderRepository = {
 
   findById(orderId: string) {
     return prisma.order.findUnique({ where: { id: orderId } });
+  },
+
+  findByIdempotencyKey(key: string) {
+    return prisma.order.findUnique({ where: { idempotencyKey: key } });
   }
 };

@@ -12,12 +12,27 @@ export const orderService = {
     amount: number;
     currency: string;
     shouldFailInventory?: boolean;
+    idempotencyKey?: string;
   }) {
+    // Check for idempotency to prevent duplicates
+    if (input.idempotencyKey) {
+      const existing = await orderRepository.findByIdempotencyKey(input.idempotencyKey);
+      if (existing) {
+        return { 
+          order: existing, 
+          event: null, 
+          message: "Order already exists (idempotent)",
+          isDuplicate: true 
+        };
+      }
+    }
+
     const order = await orderRepository.create({
       tenantId: input.tenantId,
       amount: input.amount,
       currency: input.currency,
       orderNumber: generateOrderNumber(),
+      idempotencyKey: input.idempotencyKey,
       metadata: {
         shouldFailInventory: input.shouldFailInventory ?? false
       }

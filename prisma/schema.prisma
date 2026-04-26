@@ -90,6 +90,7 @@ model VerificationToken {
 model Order {
   id               String   @id @default(cuid())
   orderNumber      String   @unique
+  idempotencyKey   String?  @unique
   tenantId         String
   amount           Decimal  @db.Decimal(10, 2)
   currency         String   @default("INR")
