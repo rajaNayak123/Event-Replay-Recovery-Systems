@@ -1,3 +1,4 @@
+import { getSession } from "next-auth/react";
 import {
   CreateOrderResponse,
   FailedEvent,
@@ -10,11 +11,36 @@ const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
   "http://localhost:8000";
 
+/**
+ * Note on Authentication for Next.js 16 App Router:
+ * The most secure approach for communicating with external APIs is using Server Actions, 
+ * as the AUTH_SECRET and tokens stay on the server. However, for compatibility with 
+ * existing client-side logic, we are using getSession() to inject the token into 
+ * client-side fetch calls.
+ */
 async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(init?.headers as Record<string, string> || {})
   };
+
+  // Inject authentication token if session exists
+  let accessToken: string | undefined;
+
+  if (typeof window !== "undefined") {
+    const session = await getSession();
+    accessToken = (session as any)?.accessToken;
+  } else {
+    // Use server-side auth() for Server Components/Actions
+    const { auth } = await import("./auth");
+    const session = await auth();
+    accessToken = (session as any)?.accessToken;
+  }
+
+  if (accessToken) {
+    headers["Authorization"] = `Bearer ${accessToken}`;
+  }
+
 
   const fetchUrl = `${API_BASE_URL}${path}`;
 
@@ -23,6 +49,7 @@ async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
     cache: "no-store",
     headers
   });
+
 
   const contentType = res.headers.get("content-type");
 
