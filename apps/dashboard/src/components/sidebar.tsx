@@ -16,12 +16,9 @@ const navigation = [
   { name: "Overview", href: "/", icon: LayoutDashboard },
   { name: "Failed Events", href: "/failed-events", icon: AlertCircle },
   { name: "Replay Logs", href: "/replay-logs", icon: RefreshCw },
-  { name: "System Health", href: "/health", icon: Activity },
 ];
 
-const secondaryNavigation = [
-  { name: "Settings", href: "/settings", icon: Settings },
-];
+const secondaryNavigation: any[] = [];
 
 export function Sidebar() {
   const pathname = usePathname();
