@@ -13,6 +13,7 @@ export const orderService = {
     currency: string;
     shouldFailInventory?: boolean;
     idempotencyKey?: string;
+    traceId?: string;
   }) {
     // Check for idempotency to prevent duplicates
     if (input.idempotencyKey) {
@@ -51,7 +52,8 @@ export const orderService = {
     await bus.publish(TOPICS.ORDER_CREATED, event.eventId, event, {
       eventId: event.eventId,
       eventType: event.eventType,
-      tenantId: event.tenantId
+      tenantId: event.tenantId,
+      ...(input.traceId ? { "x-trace-id": input.traceId } : {})
     });
 
     return { order, event };

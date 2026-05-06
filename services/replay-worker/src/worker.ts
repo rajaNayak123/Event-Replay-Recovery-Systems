@@ -33,9 +33,10 @@ export async function startReplayWorker() {
         }
 
         const payload = JSON.parse(rawValue);
+        const traceId = message.headers?.["x-trace-id"]?.toString();
 
         try {
-          await handleReplayRequest(payload);
+          await handleReplayRequest(payload, traceId);
           resolveOffset(message.offset);
           await commitOffsetsIfNecessary();
           await heartbeat();
@@ -45,6 +46,7 @@ export async function startReplayWorker() {
               topic: batch.topic,
               partition: batch.partition,
               offset: message.offset,
+              traceId,
               error: error instanceof Error ? error.message : String(error)
             },
             "Replay worker failed to process replay message"

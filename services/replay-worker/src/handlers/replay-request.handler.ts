@@ -12,7 +12,7 @@ export async function handleReplayRequest(payload: {
   requestedBy: string;
   requestedAt: string;
   event: any;
-}) {
+}, traceId?: string) {
   const failed = await failedEventRepository.findById(payload.failedEventId);
 
   if (!failed) {
@@ -22,7 +22,7 @@ export async function handleReplayRequest(payload: {
   // If already REPLAYED, skip silently — Kafka may redeliver after a restart
   if (failed.status === FailedEventStatus.REPLAYED) {
     logger.warn(
-      { failedEventId: failed.id },
+      { failedEventId: failed.id, traceId },
       "Replay message received for already-replayed event, skipping"
     );
     return;
@@ -75,15 +75,15 @@ export async function handleReplayRequest(payload: {
         reason: result.reason ?? null,
         replayed: !result.skipped
       }
-    });
+    }, traceId);
 
     if (result.skipped) {
       logger.warn(
-        { failedEventId: failed.id, reason: result.reason },
+        { failedEventId: failed.id, reason: result.reason, traceId },
         "Replay event was already processed — marked as REPLAYED"
       );
     } else {
-      logger.info({ failedEventId: failed.id }, "Replay succeeded");
+      logger.info({ failedEventId: failed.id, traceId }, "Replay succeeded");
     }
   } catch (error: any) {
     await failedEventRepository.updateStatus(failed.id, {
@@ -100,10 +100,10 @@ export async function handleReplayRequest(payload: {
     await safeUpdateReplayLog(payload.replayRequestId, {
       status: ReplayLogStatus.FAILED,
       errorMessage: error.message
-    });
+    }, traceId);
 
     logger.error(
-      { failedEventId: failed.id, error: error.message },
+      { failedEventId: failed.id, error: error.message, traceId },
       "Replay failed"
     );
   }
@@ -116,13 +116,14 @@ async function safeUpdateReplayLog(
     status: ReplayLogStatus;
     resultPayload?: Record<string, unknown>;
     errorMessage?: string;
-  }
+  },
+  traceId?: string
 ) {
   try {
     await replayLogRepository.update(id, data);
   } catch (err: any) {
     logger.warn(
-      { replayRequestId: id, error: err.message },
+      { replayRequestId: id, error: err.message, traceId },
       "Could not update replay log — log entry may not exist for this ID"
     );
   }

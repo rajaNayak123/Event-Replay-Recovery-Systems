@@ -38,9 +38,10 @@ export async function startWorker() {
         }
 
         const event = JSON.parse(rawValue);
+        const traceId = message.headers?.["x-trace-id"]?.toString();
 
         try {
-          await handleOrderCreated(event, batch.topic);
+          await handleOrderCreated(event, batch.topic, traceId);
           resolveOffset(message.offset);
           await commitOffsetsIfNecessary();
           await heartbeat();
@@ -50,6 +51,7 @@ export async function startWorker() {
               topic: batch.topic,
               partition: batch.partition,
               offset: message.offset,
+              traceId,
               error: error instanceof Error ? error.message : String(error)
             },
             "Kafka consumer failed to process message"

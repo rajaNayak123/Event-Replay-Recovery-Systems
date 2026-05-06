@@ -18,11 +18,12 @@ export * from "./repositories/order.repository";
 export * from "./repositories/processed-event.repository";
 export * from "./repositories/replay-log.repository";
 export * from "./services/failed-event.service";
+export * from "./services/inventory.service";
 export * from "./services/processing.service";
 export * from "./services/replay-request.service";
 export * from "./services/retry.service";
 export * from "./services/scheduled-replay.service";
+export * from "./utils/circuit-breaker";
 export * from "./utils/ids";
-
 export * from "./utils/json";
 export * from "./utils/sleep";

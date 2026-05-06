@@ -7,7 +7,7 @@ import {
   logger
 } from "shared";
 
-export async function handleOrderCreated(event: BaseEvent, sourceTopic: string) {
+export async function handleOrderCreated(event: BaseEvent, sourceTopic: string, traceId?: string) {
   const retryCount = event.meta?.retryCount ?? 0;
 
   try {
@@ -19,12 +19,12 @@ export async function handleOrderCreated(event: BaseEvent, sourceTopic: string) 
 
     if (result.skipped) {
       logger.warn(
-        { eventId: event.eventId, reason: result.reason },
+        { eventId: event.eventId, reason: result.reason, traceId },
         "Event skipped due to idempotency"
       );
     } else {
       logger.info(
-        { eventId: event.eventId, orderId: event.orderId },
+        { eventId: event.eventId, orderId: (event as any).orderId, traceId },
         "Event processed successfully"
       );
     }
@@ -34,9 +34,10 @@ export async function handleOrderCreated(event: BaseEvent, sourceTopic: string) 
     logger.error(
       {
         eventId: event.eventId,
-        orderId: event.orderId,
+        orderId: (event as any).orderId,
         retryCount: nextRetryCount,
-        error: error.message
+        error: error.message,
+        traceId
       },
       "Event processing failed"
     );
@@ -54,7 +55,7 @@ export async function handleOrderCreated(event: BaseEvent, sourceTopic: string) 
         nextRetryCount
       );
 
-      logger.info({ eventId: event.eventId, nextRetryCount }, "Retry published to retry topic");
+      logger.info({ eventId: event.eventId, nextRetryCount, traceId }, "Retry published to retry topic");
       return;
     }
 
@@ -66,7 +67,7 @@ export async function handleOrderCreated(event: BaseEvent, sourceTopic: string) 
     );
 
     logger.error(
-      { eventId: event.eventId, retryCount: nextRetryCount },
+      { eventId: event.eventId, retryCount: nextRetryCount, traceId },
       "Event persisted as failed and sent to DLQ topic"
     );
   }
