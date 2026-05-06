@@ -1,4 +1,4 @@
-# Antigravity — Event Replay & Recovery System
+# Event Replay & Recovery System
 
 A production-grade distributed event processing platform built to handle failures gracefully. When downstream services fail, events are captured, stored, and can be replayed manually or on a schedule — with full audit trails and a real-time dashboard.
 
