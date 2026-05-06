@@ -3,7 +3,7 @@ import { Request } from "express";
 import { ApiError } from "./api-error";
 
 const SECRET = new TextEncoder().encode(
-  process.env.AUTH_SECRET || "6oSPg1sEJiVZjtPmzsOeSgwtOW1QpPbR/5cpyCxqQWoH"
+  process.env.AUTH_SECRET
 );
 
 export async function verifyToken(req: Request) {
