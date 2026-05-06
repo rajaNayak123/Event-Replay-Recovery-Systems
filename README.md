@@ -17,7 +17,6 @@ A production-grade distributed event processing platform built to handle failure
 - [Environment Variables](#environment-variables)
 - [API Reference](#api-reference)
 - [Design Decisions](#design-decisions)
-- [Known Limitations](#known-limitations)
 - [What I'd Do Differently](#what-id-do-differently)
 
 ---
