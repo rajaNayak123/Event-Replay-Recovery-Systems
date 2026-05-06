@@ -517,28 +517,6 @@ Different consumer groups, different SLAs. Replay events need careful logging an
 
 ---
 
-## Known Limitations
-
-**Retry delay uses `setTimeout` (not durable)**
-If the consumer-worker process restarts during a retry delay window, that retry is silently lost. In production, this should use a Redis delayed queue or Kafka's scheduled messages feature.
-
-**Redis cache invalidation uses `keys()` (O(N) scan)**
-`redis.keys("prefix:*")` blocks Redis while scanning. For high-cardinality keyspaces this degrades performance. The fix is to use `SCAN` with cursor iteration.
-
-**No correlation/trace IDs across services**
-Logs exist per-service but cannot be correlated end-to-end. A `traceId` generated at order creation and threaded through Kafka headers → API logs → worker logs would enable proper distributed tracing.
-
-**Circuit breaker state is in-memory only**
-The `inventoryService` has no circuit breaker. If inventory is down, every event retries until DLQ regardless of how many have already failed. A Redis-backed circuit breaker would open after N failures and fast-fail subsequent calls.
-
-**No role-based access control beyond ADMIN**
-All authenticated users have identical permissions. A real system would have `VIEWER` and `OPERATOR` roles where viewers cannot trigger replays.
-
-**Kafka is single-partition per topic**
-`replicationFactor: 1` and `numPartitions: 1` is fine for development but offers no parallelism or fault tolerance in production.
-
----
-
 ## What I'd Do Differently
 
 **Structured logging with trace IDs**
