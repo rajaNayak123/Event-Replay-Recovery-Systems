@@ -23,6 +23,7 @@ export * from "./services/processing.service";
 export * from "./services/replay-request.service";
 export * from "./services/retry.service";
 export * from "./services/scheduled-replay.service";
+export * from "./services/scheduled-retry.service";
 export * from "./utils/circuit-breaker";
 export * from "./utils/ids";
 export * from "./utils/json";

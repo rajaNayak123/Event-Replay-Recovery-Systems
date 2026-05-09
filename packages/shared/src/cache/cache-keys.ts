@@ -3,5 +3,6 @@ export const cacheKeys = {
       `failed-events:list:${status ?? "ALL"}:${search ?? "ALL"}`,
     failedEventById: (id: string) => `failed-events:detail:${id}`,
     failedEventMetrics: () => `failed-events:metrics`,
-    scheduledReplayQueue: () => `replay:scheduled:queue`
+    scheduledReplayQueue: () => `replay:scheduled:queue`,
+    scheduledRetryQueue: () => `retry:scheduled:queue`
   };

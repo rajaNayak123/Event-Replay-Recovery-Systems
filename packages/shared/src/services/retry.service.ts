@@ -1,48 +1,26 @@
 import { env } from "../config/env";
 import { BaseEvent } from "../events/types";
-import { publishKafkaMessage } from "../kafka/producer";
-import { TOPICS } from "../kafka/topics";
 import { logger } from "../logging/logger";
+import { scheduledRetryService } from "./scheduled-retry.service";
 
 export const retryService = {
   /**
-   * Schedules a retry without blocking the caller's event loop.
-   * Awaiting a sleep in a Kafka consumer blocks the partition's processing loop.
+   * Schedules a retry persistently.
+   * Moving away from setTimeout to Redis ZSET ensures retries survive process restarts.
    */
   async scheduleRetry(event: BaseEvent, retryCount: number) {
     const delay = env.RETRY_BACKOFF_MS * retryCount;
+    const scheduledAt = Date.now() + delay;
     
     logger.info(
-      { eventId: event.eventId, retryCount, delayMs: delay },
-      "Scheduling event retry in background"
+      { eventId: event.eventId, retryCount, delayMs: delay, scheduledAt: new Date(scheduledAt) },
+      "Scheduling persistent event retry"
     );
 
-    // Use setTimeout to execute the retry publication after the delay without blocking the event loop
-    setTimeout(async () => {
-      try {
-        await publishKafkaMessage(
-          TOPICS.ORDER_RETRY,
-          event.eventId,
-          {
-            ...event,
-            meta: {
-              ...event.meta,
-              retryCount
-            }
-          },
-          {
-            eventId: event.eventId,
-            eventType: event.eventType,
-            retryCount: String(retryCount)
-          }
-        );
-        logger.info({ eventId: event.eventId, retryCount }, "Background retry published successfully");
-      } catch (error) {
-        logger.error(
-          { error, eventId: event.eventId, retryCount },
-          "Failed to publish background retry"
-        );
-      }
-    }, delay);
+    await scheduledRetryService.schedule({
+      event,
+      retryCount,
+      scheduledAt
+    });
   }
 };
