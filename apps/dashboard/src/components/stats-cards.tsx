@@ -10,6 +10,13 @@ import {
 
 export function StatsCards({ metrics }: { metrics: MetricsResponse }) {
   const map = new Map(metrics.failedEventsByStatus.map((item) => [item.status, item._count]));
+  
+  const replayed = map.get("REPLAYED") ?? 0;
+  const replayFailed = map.get("REPLAY_FAILED") ?? 0;
+  const totalResolutionAttempts = replayed + replayFailed;
+  const recoveryRate = totalResolutionAttempts > 0 
+    ? Math.round((replayed / totalResolutionAttempts) * 100) 
+    : 0;
 
   const cards = [
     { 
@@ -22,7 +29,7 @@ export function StatsCards({ metrics }: { metrics: MetricsResponse }) {
         iconText: "text-rose-400",
         glow: "bg-rose-500/5 group-hover:bg-rose-500/10"
       },
-      trend: "+2% from last hour"
+      trend: "Real-time"
     },
     { 
       label: "Awaiting Replay", 
@@ -38,7 +45,7 @@ export function StatsCards({ metrics }: { metrics: MetricsResponse }) {
     },
     { 
       label: "Successfully Replayed", 
-      value: map.get("REPLAYED") ?? 0, 
+      value: replayed, 
       icon: CheckCircle2, 
       styles: {
         iconBg: "bg-emerald-500/10",
@@ -46,11 +53,11 @@ export function StatsCards({ metrics }: { metrics: MetricsResponse }) {
         iconText: "text-emerald-400",
         glow: "bg-emerald-500/5 group-hover:bg-emerald-500/10"
       },
-      trend: "85% recovery rate"
+      trend: `${recoveryRate}% recovery rate`
     },
     { 
       label: "Exhausted Retries", 
-      value: map.get("REPLAY_FAILED") ?? 0, 
+      value: replayFailed, 
       icon: XCircle, 
       styles: {
         iconBg: "bg-red-500/10",

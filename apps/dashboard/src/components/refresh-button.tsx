@@ -1,25 +1,25 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useTransition } from "react";
 
 export function RefreshButton() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
-  async function handleRefresh() {
-    setLoading(true);
-    router.refresh();
-    setTimeout(() => setLoading(false), 500);
+  function handleRefresh() {
+    startTransition(() => {
+      router.refresh();
+    });
   }
 
   return (
     <button
       onClick={handleRefresh}
-      disabled={loading}
+      disabled={isPending}
       className="rounded-lg border border-white/10 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 disabled:opacity-50"
     >
-      {loading ? "Refreshing..." : "Refresh"}
+      {isPending ? "Refreshing..." : "Refresh"}
     </button>
   );
 }

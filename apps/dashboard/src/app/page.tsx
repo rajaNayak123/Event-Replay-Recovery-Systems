@@ -54,14 +54,14 @@ export default async function HomePage() {
               </p>
               <div className="space-y-4">
                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-slate-400">Success Rate</span>
+                    <span className="text-xs text-slate-400">Success Rate (Demo)</span>
                     <span className="text-xs font-bold text-emerald-400">98.2%</span>
                  </div>
                  <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
                     <div className="h-full bg-emerald-500 w-[98.2%]" />
                  </div>
                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-slate-400">Recovery Latency</span>
+                    <span className="text-xs text-slate-400">Recovery Latency (Demo)</span>
                     <span className="text-xs font-bold text-indigo-400">~1.2s</span>
                  </div>
                  <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
