@@ -22,7 +22,7 @@ export async function createOrder(req: Request, res: Response) {
   // Ensure idempotencyKey is passed from either body or headers
   const idempotencyKey = body.idempotencyKey || (req.headers["x-idempotency-key"] as string);
 
-  logger.info({ traceId, tenantId: body.tenantId, amount: body.amount }, "Creating order request received");
+  logger.info({ traceId }, "Creating order request received");
 
   const result = await orderService.createOrder({
     ...body,
