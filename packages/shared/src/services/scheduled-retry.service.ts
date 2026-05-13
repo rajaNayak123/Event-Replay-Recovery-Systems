@@ -9,7 +9,13 @@ export interface ScheduledRetryData {
   scheduledAt: number; // Unix timestamp in ms
 }
 
-export const scheduledRetryService = {
+export interface ScheduledRetryService {
+  schedule(data: ScheduledRetryData): Promise<void>;
+  getDueRetries(now?: number): Promise<ScheduledRetryData[]>;
+  removeProcessed(data: ScheduledRetryData): Promise<number>;
+}
+
+export const scheduledRetryService: ScheduledRetryService = {
   async schedule(data: ScheduledRetryData) {
     const key = cacheKeys.scheduledRetryQueue();
     const payload = JSON.stringify(data);
@@ -34,9 +40,9 @@ export const scheduledRetryService = {
     return rawDue.map(r => JSON.parse(r) as ScheduledRetryData);
   },
 
-  async removeProcessed(data: ScheduledRetryData) {
+  async removeProcessed(data: ScheduledRetryData): Promise<number> {
     const key = cacheKeys.scheduledRetryQueue();
     const payload = JSON.stringify(data);
-    await redis.zrem(key, payload);
+    return await redis.zrem(key, payload);
   }
 };

@@ -19,6 +19,14 @@ async function processDueReplays() {
 
     for (const item of due) {
       try {
+        // Atomic guard: Try to remove from Redis first to "claim" the task
+        const removed = await scheduledReplayService.removeProcessed(item) as unknown as number;
+        
+        if (removed === 0) {
+          // Already claimed by another instance
+          continue;
+        }
+
         await publishKafkaMessage(
           TOPICS.ORDER_REPLAY,
           item.event.eventId,
@@ -38,7 +46,6 @@ async function processDueReplays() {
           }
         );
 
-        await scheduledReplayService.removeProcessed(item);
         logger.info({ replayRequestId: item.replayRequestId }, "Scheduled replay published");
       } catch (err) {
         logger.error({ replayRequestId: item.replayRequestId, error: err }, "Failed replay processing");
@@ -59,6 +66,14 @@ async function processDueRetries() {
 
     for (const item of due) {
       try {
+        // Atomic guard: Try to remove from Redis first to "claim" the task
+        const removed = await scheduledRetryService.removeProcessed(item) as unknown as number;
+
+        if (removed === 0) {
+          // Already claimed by another instance
+          continue;
+        }
+
         await publishKafkaMessage(
           TOPICS.ORDER_RETRY,
           item.event.eventId,
@@ -77,7 +92,6 @@ async function processDueRetries() {
           }
         );
 
-        await scheduledRetryService.removeProcessed(item);
         logger.info({ eventId: item.event.eventId, retryCount: item.retryCount }, "Scheduled retry published");
       } catch (err) {
         logger.error({ eventId: item.event.eventId, error: err }, "Failed retry processing");
@@ -103,4 +117,15 @@ async function main() {
 main().catch(err => {
   logger.error({ err }, "Scheduled Replay Worker crashed");
   process.exit(1);
+});
+
+// Graceful shutdown
+process.on("SIGTERM", () => {
+  logger.info("SIGTERM received, shutting down scheduled worker...");
+  process.exit(0);
+});
+
+process.on("SIGINT", () => {
+  logger.info("SIGINT received, shutting down scheduled worker...");
+  process.exit(0);
 });

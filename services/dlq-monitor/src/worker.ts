@@ -37,4 +37,22 @@ export async function startWorker() {
       }
     }
   });
+
+  // Graceful shutdown
+  const shutdown = async () => {
+    logger.info("Disconnecting DLQ monitor worker...");
+    await consumer.disconnect();
+    logger.info("DLQ monitor worker disconnected");
+  };
+
+  process.on("SIGTERM", async () => {
+    await shutdown();
+    process.exit(0);
+  });
+
+  process.on("SIGINT", async () => {
+    await shutdown();
+    process.exit(0);
+  });
 }
+

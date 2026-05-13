@@ -62,4 +62,21 @@ export async function startWorker() {
       }
     }
   });
+
+  // Graceful shutdown
+  const shutdown = async () => {
+    logger.info("Disconnecting order consumer worker...");
+    await consumer.disconnect();
+    logger.info("Order consumer worker disconnected");
+  };
+
+  process.on("SIGTERM", async () => {
+    await shutdown();
+    process.exit(0);
+  });
+
+  process.on("SIGINT", async () => {
+    await shutdown();
+    process.exit(0);
+  });
 }

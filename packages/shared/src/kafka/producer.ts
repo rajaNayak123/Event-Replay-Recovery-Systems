@@ -51,3 +51,20 @@ export async function publishKafkaMessage(topic: string, key: string, value: unk
     throw error;
   }
 }
+
+// Graceful shutdown
+const shutdown = async () => {
+  logger.info("Disconnecting Kafka producer...");
+  await producer.disconnect();
+  logger.info("Kafka producer disconnected");
+};
+
+process.on("SIGTERM", async () => {
+  await shutdown();
+  process.exit(0);
+});
+
+process.on("SIGINT", async () => {
+  await shutdown();
+  process.exit(0);
+});

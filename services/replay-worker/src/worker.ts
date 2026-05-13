@@ -57,4 +57,21 @@ export async function startReplayWorker() {
       }
     }
   });
+
+  // Graceful shutdown
+  const shutdown = async () => {
+    logger.info("Disconnecting replay worker...");
+    await consumer.disconnect();
+    logger.info("Replay worker disconnected");
+  };
+
+  process.on("SIGTERM", async () => {
+    await shutdown();
+    process.exit(0);
+  });
+
+  process.on("SIGINT", async () => {
+    await shutdown();
+    process.exit(0);
+  });
 }

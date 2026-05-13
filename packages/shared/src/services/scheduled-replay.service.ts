@@ -10,7 +10,13 @@ export interface ScheduledReplayData {
   scheduledAt: number; // Unix timestamp in ms
 }
 
-export const scheduledReplayService = {
+export interface ScheduledReplayService {
+  schedule(data: ScheduledReplayData): Promise<void>;
+  getDueReplays(now?: number): Promise<ScheduledReplayData[]>;
+  removeProcessed(data: ScheduledReplayData): Promise<number>;
+}
+
+export const scheduledReplayService: ScheduledReplayService = {
   async schedule(data: ScheduledReplayData) {
     const key = cacheKeys.scheduledReplayQueue();
     const payload = JSON.stringify(data);
@@ -36,9 +42,9 @@ export const scheduledReplayService = {
     return rawDue.map(r => JSON.parse(r) as ScheduledReplayData);
   },
 
-  async removeProcessed(data: ScheduledReplayData) {
+  async removeProcessed(data: ScheduledReplayData): Promise<number> {
     const key = cacheKeys.scheduledReplayQueue();
     const payload = JSON.stringify(data);
-    await redis.zrem(key, payload);
+    return await redis.zrem(key, payload);
   }
 };
