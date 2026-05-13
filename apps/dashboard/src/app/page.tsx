@@ -94,9 +94,9 @@ export default function HomePage() {
                  </div>
               </div>
             </div>
-            <button className="mt-6 flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-white/5 border border-white/5 text-xs font-bold text-white hover:bg-white/10 transition-all">
+            <Link href="/network-stats" className="mt-6 flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-white/5 border border-white/5 text-xs font-bold text-white hover:bg-white/10 transition-all">
               View Network Stats <ArrowRight className="h-3 w-3" />
-            </button>
+            </Link>
           </div>
         </section>
 

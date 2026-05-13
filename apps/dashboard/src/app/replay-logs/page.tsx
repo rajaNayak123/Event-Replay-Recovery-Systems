@@ -8,17 +8,18 @@ import { Loader2 } from "lucide-react";
 type Props = {
   searchParams: Promise<{
     status?: string;
+    search?: string;
   }>;
 };
 
-async function LogsList({ status }: { status?: string }) {
-  const logs = await getReplayLogs({ status });
+async function LogsList({ status, search }: { status?: string, search?: string }) {
+  const logs = await getReplayLogs({ status, search });
   
   if (logs.length === 0) {
     return (
       <EmptyState 
-        title="No replay logs found" 
-        description="When you replay a failed event, the details will appear here." 
+        title={search ? "No logs matching your search" : "No replay logs found"} 
+        description={search ? "Try adjusting your keywords." : "When you replay a failed event, the details will appear here."} 
       />
     );
   }
@@ -47,11 +48,12 @@ export default async function ReplayLogsPage({ searchParams }: Props) {
               <Loader2 className="h-10 w-10 animate-spin text-indigo-500/50" />
             </div>
           }>
-            <LogsList status={params.status} />
+            <LogsList status={params.status} search={params.search} />
           </Suspense>
         </section>
       </main>
     </div>
   );
 }
+
 

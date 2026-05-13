@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { SessionProvider } from "next-auth/react";
-import { Sidebar } from "@/components/sidebar";
+import { LayoutWrapper } from "@/components/layout-wrapper";
 import "./globals.css";
 import "../styles/theme.css";
 
@@ -18,15 +18,13 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className="min-h-screen text-slate-50">
         <SessionProvider>
-          <div className="flex">
-            <Sidebar />
-            <div className="flex-1 ml-64 min-h-screen flex flex-col bg-slate-950/20 backdrop-blur-3xl">
-              {children}
-            </div>
-          </div>
+          <LayoutWrapper>
+            {children}
+          </LayoutWrapper>
         </SessionProvider>
       </body>
     </html>
   );
 }
+
 

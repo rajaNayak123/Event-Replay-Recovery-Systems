@@ -1,12 +1,13 @@
 "use client";
 
 import { Search } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 
 export function SearchBar() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const [query, setQuery] = useState(searchParams.get("search") || "");
 
   // Update local state when URL params change (e.g. on navigation)
@@ -24,8 +25,12 @@ export function SearchBar() {
       params.delete("search");
     }
     
-    router.push(`/failed-events?${params.toString()}`);
+    // Determine where to send the search
+    // If we're on /replay-logs, search there. Otherwise, search /failed-events.
+    const targetPath = pathname === "/replay-logs" ? "/replay-logs" : "/failed-events";
+    router.push(`${targetPath}?${params.toString()}`);
   };
+
 
   return (
     <form onSubmit={handleSearch} className="relative w-96 group">

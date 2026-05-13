@@ -31,3 +31,21 @@ export async function replayFailedEvent(id: string, scheduledAt?: string) {
   
   return result;
 }
+
+export async function getFailedCount() {
+  try {
+    const metrics = await fetchJson<any>("/api/metrics");
+    const failedByStatus = metrics?.failedEventsByStatus || [];
+    
+    // Sum FAILED and REPLAY_FAILED statuses
+    return failedByStatus.reduce((acc: number, item: any) => {
+      if (item.status === "FAILED" || item.status === "REPLAY_FAILED") {
+        return acc + item._count;
+      }
+      return acc;
+    }, 0);
+  } catch (error) {
+    console.error("Failed to fetch failed count:", error);
+    return 0;
+  }
+}

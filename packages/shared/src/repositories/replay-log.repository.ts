@@ -37,11 +37,19 @@ export const replayLogRepository = {
     });
   },
 
-  list(filters?: { status?: ReplayLogStatus }) {
+  list(filters?: { status?: ReplayLogStatus; search?: string }) {
+    const where: any = {};
+    if (filters?.status) where.status = filters.status;
+    if (filters?.search) {
+      where.OR = [
+        { eventId: { contains: filters.search, mode: "insensitive" } },
+        { errorMessage: { contains: filters.search, mode: "insensitive" } },
+        { failedEventId: { contains: filters.search, mode: "insensitive" } }
+      ];
+    }
+
     return prisma.replayLog.findMany({
-      where: {
-        status: filters?.status
-      },
+      where,
       include: {
         failedEvent: true,
         user: {
@@ -56,4 +64,5 @@ export const replayLogRepository = {
       }
     });
   }
+
 };

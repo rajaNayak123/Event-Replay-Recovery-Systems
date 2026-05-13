@@ -11,6 +11,7 @@ import {
   Terminal,
   Activity
 } from "lucide-react";
+import { FailedEventsBadge } from "./failed-events-badge";
 
 const navigation = [
   { name: "Overview", href: "/", icon: LayoutDashboard },
@@ -18,13 +19,16 @@ const navigation = [
   { name: "Replay Logs", href: "/replay-logs", icon: RefreshCw },
 ];
 
-const secondaryNavigation: any[] = [];
+const secondaryNavigation = [
+  { name: "Network Stats", href: "/network-stats", icon: Activity },
+  { name: "Settings", href: "/settings", icon: Settings },
+];
 
-export function Sidebar() {
+export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-white/5 bg-slate-950/50 backdrop-blur-2xl">
+    <aside className="h-full w-full border-r border-white/5 bg-slate-950/50 backdrop-blur-2xl">
       <div className="flex h-full flex-col px-4 py-6">
         <div className="flex items-center gap-3 px-2 mb-10">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500 shadow-lg shadow-indigo-500/20">
@@ -40,6 +44,7 @@ export function Sidebar() {
               <Link
                 key={item.name}
                 href={item.href}
+                onClick={onNavigate}
                 className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
                   isActive 
                     ? "bg-indigo-500/10 text-indigo-400" 
@@ -48,11 +53,7 @@ export function Sidebar() {
               >
                 <item.icon className={`h-5 w-5 ${isActive ? "text-indigo-400" : "text-slate-500 group-hover:text-slate-300"}`} />
                 {item.name}
-                {item.name === "Failed Events" && (
-                  <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-rose-500/10 text-[10px] font-bold text-rose-500 border border-rose-500/20">
-                    !
-                  </span>
-                )}
+                {item.name === "Failed Events" && <FailedEventsBadge />}
               </Link>
             );
           })}
@@ -63,6 +64,7 @@ export function Sidebar() {
             <Link
               key={item.name}
               href={item.href}
+              onClick={onNavigate}
               className="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white"
             >
               <item.icon className="h-5 w-5 text-slate-500 group-hover:text-slate-300" />
