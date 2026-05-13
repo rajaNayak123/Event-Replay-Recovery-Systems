@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { replayFailedEvent } from "@/lib/api";
+import { useState, useEffect, useTransition } from "react";
+import { replayFailedEvent } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 
 type Props = {
@@ -11,6 +11,7 @@ type Props = {
 
 export function ReplayButton({ id, disabled }: Props) {
   const [loading, setLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [showConfirm, setShowConfirm] = useState(false);
   const [isScheduling, setIsScheduling] = useState(false);
   const [scheduledAt, setScheduledAt] = useState("");
@@ -39,7 +40,10 @@ export function ReplayButton({ id, disabled }: Props) {
       setShowConfirm(false);
       setIsScheduling(false);
       setScheduledAt("");
-      router.refresh();
+      
+      startTransition(() => {
+        router.refresh();
+      });
     } catch (error) {
       setMessage({
         type: "error",
@@ -49,6 +53,8 @@ export function ReplayButton({ id, disabled }: Props) {
       setLoading(false);
     }
   }
+
+  const isActuallyLoading = loading || isPending;
 
   if (showConfirm) {
     return (
@@ -76,10 +82,10 @@ export function ReplayButton({ id, disabled }: Props) {
         <div className="flex items-center gap-2">
           <button
             onClick={handleReplay}
-            disabled={loading || (isScheduling && !scheduledAt)}
+            disabled={isActuallyLoading || (isScheduling && !scheduledAt)}
             className="flex-1 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-50"
           >
-            {loading ? "Processing..." : isScheduling ? "Schedule" : "Replay Now"}
+            {isActuallyLoading ? "Processing..." : isScheduling ? "Schedule" : "Replay Now"}
           </button>
           <button
             onClick={() => {
@@ -110,7 +116,7 @@ export function ReplayButton({ id, disabled }: Props) {
     <div className="relative">
       <button
         onClick={() => setShowConfirm(true)}
-        disabled={disabled || loading}
+        disabled={disabled || isActuallyLoading}
         className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
       >
         Replay

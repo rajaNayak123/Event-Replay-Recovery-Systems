@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { createOrder } from "@/lib/api";
+import { useState, useTransition } from "react";
+import { createOrder } from "@/lib/actions";
 import { ActionToast } from "./action-toast";
 import { useRouter } from "next/navigation";
 import { Send, AlertTriangle, CheckCircle2, Loader2 } from "lucide-react";
 
 export function CreateOrderForm() {
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
 
   const [tenantId, setTenantId] = useState("tenant-demo");
   const [amount, setAmount] = useState("1499");
@@ -27,7 +28,7 @@ export function CreateOrderForm() {
       setMessage({ type: "error", text: "Tenant ID is required" });
       return;
     }
-    if (!parsedAmount || parsedAmount <= 0) {
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
       setMessage({ type: "error", text: "Amount must be a positive number" });
       return;
     }
@@ -48,7 +49,9 @@ export function CreateOrderForm() {
         text: `Order ${result.order.orderNumber} created — event ${result.event.eventId} published`
       });
 
-      router.refresh();
+      startTransition(() => {
+        router.refresh();
+      });
     } catch (error) {
       setMessage({
         type: "error",
@@ -58,6 +61,8 @@ export function CreateOrderForm() {
       setLoading(false);
     }
   }
+
+  const isActuallyLoading = loading || isPending;
 
   return (
     <div className="relative">
@@ -116,10 +121,10 @@ export function CreateOrderForm() {
         <div className="flex items-end">
           <button
             type="submit"
-            disabled={loading}
+            disabled={isActuallyLoading}
             className="w-full group relative flex items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-600/20 hover:bg-indigo-500 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:scale-100 overflow-hidden"
           >
-            {loading ? (
+            {isActuallyLoading ? (
               <Loader2 className="h-5 w-5 animate-spin" />
             ) : (
               <>

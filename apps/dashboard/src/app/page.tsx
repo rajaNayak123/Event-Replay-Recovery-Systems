@@ -1,19 +1,44 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { StatsCards } from "@/components/stats-cards";
-import { getMetrics, getFailedEvents } from "@/lib/api";
+import { getMetrics, getFailedEvents } from "@/lib/api-client";
 import { FailedEventsTable } from "@/components/failed-events-table";
 import { EmptyState } from "@/components/empty-state";
 import { CreateOrderForm } from "@/components/create-order-form";
 import { RefreshButton } from "@/components/refresh-button";
-import { ArrowRight, Zap } from "lucide-react";
+import { ArrowRight, Zap, Loader2 } from "lucide-react";
 
-export default async function HomePage() {
-  const [metrics, failedEvents] = await Promise.all([
-    getMetrics(),
-    getFailedEvents()
-  ]);
+async function MetricsSection() {
+  const metrics = await getMetrics();
+  return <StatsCards metrics={metrics} />;
+}
 
+async function ExceptionsSection() {
+  const failedEvents = await getFailedEvents();
+  
+  return (
+    <div className="p-2">
+      {failedEvents.length === 0 ? (
+        <div className="py-12">
+          <EmptyState />
+        </div>
+      ) : (
+        <FailedEventsTable events={failedEvents.slice(0, 10)} />
+      )}
+    </div>
+  );
+}
+
+function SectionSkeleton() {
+  return (
+    <div className="flex items-center justify-center py-12">
+      <Loader2 className="h-8 w-8 animate-spin text-indigo-500/50" />
+    </div>
+  );
+}
+
+export default function HomePage() {
   return (
     <div className="flex-1 flex flex-col">
       <DashboardHeader />
@@ -76,7 +101,9 @@ export default async function HomePage() {
         </section>
 
         <section className="mb-8">
-          <StatsCards metrics={metrics} />
+          <Suspense fallback={<SectionSkeleton />}>
+            <MetricsSection />
+          </Suspense>
         </section>
 
         <section className="glass-panel rounded-3xl overflow-hidden">
@@ -93,18 +120,13 @@ export default async function HomePage() {
             </Link>
           </div>
 
-          <div className="p-2">
-            {failedEvents.length === 0 ? (
-              <div className="py-12">
-                <EmptyState />
-              </div>
-            ) : (
-              <FailedEventsTable events={failedEvents.slice(0, 10)} />
-            )}
-          </div>
+          <Suspense fallback={<SectionSkeleton />}>
+            <ExceptionsSection />
+          </Suspense>
         </section>
       </main>
     </div>
   );
 }
+
 

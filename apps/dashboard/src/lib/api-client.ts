@@ -1,5 +1,3 @@
-"use server";
-
 import { auth } from "./auth";
 import {
   CreateOrderResponse,
@@ -15,24 +13,21 @@ const API_BASE_URL =
   "http://localhost:8000";
 
 /**
- * All API communication is now handled via Server Actions.
- * This ensures that sensitive tokens (like the accessToken JWT) 
- * never leave the server and are not visible in the browser's DevTools.
+ * Shared fetch utility for server-side data fetching.
+ * This can be used in Server Components or Server Actions.
  */
-async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
+export async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(init?.headers as Record<string, string> || {})
   };
 
-  // Always use server-side auth() to retrieve the token securely
   const session = await auth();
   const accessToken = (session as any)?.user?.accessToken;
 
   if (accessToken) {
     headers["Authorization"] = `Bearer ${accessToken}`;
   }
-
 
   const fetchUrl = `${API_BASE_URL}${path}`;
 
@@ -41,7 +36,6 @@ async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
     cache: "no-store",
     headers
   });
-
 
   const contentType = res.headers.get("content-type");
 
@@ -75,14 +69,6 @@ export async function getFailedEventById(id: string) {
   return fetchJson<FailedEventDetail>(`/api/failed-events/${id}`);
 }
 
-export async function replayFailedEvent(id: string, scheduledAt?: string) {
-  return fetchJson(`/api/failed-events/${id}/replay`, { 
-    method: "POST",
-    body: JSON.stringify({ scheduledAt })
-  });
-}
-
-
 export async function getMetrics() {
   return fetchJson<MetricsResponse>("/api/metrics");
 }
@@ -95,16 +81,4 @@ export async function getReplayLogs(params?: {
 
   const suffix = query.toString() ? `?${query.toString()}` : "";
   return fetchJson<ReplayLog[]>("/api/replay-logs" + suffix);
-}
-
-export async function createOrder(input: {
-  tenantId: string;
-  amount: number;
-  currency: string;
-  shouldFailInventory?: boolean;
-}) {
-  return fetchJson<CreateOrderResponse>("/api/orders", {
-    method: "POST",
-    body: JSON.stringify(input)
-  });
 }
